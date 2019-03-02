@@ -1,0 +1,5 @@
+/\.idea/*
+/testwork.sublime-project
+/testwork.sublime-workspace
+/composer.json
+/composer.lock
