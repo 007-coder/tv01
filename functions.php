@@ -17,14 +17,47 @@ function prepareInput ($meta = [], $in, $out = [], $prefix = '') {
               'label' => $prefix.$key,
               'meta' => $currMeta              
             ];
-
-
-
         }
     }
 
     return $out;
 }
+
+function MultiDimToOneDimArray($kSepar = '|', $in, $out = [], $prefix = '') {
+    foreach ($in as $key => $value) {
+        if (is_array($value)) {
+            $out = array_merge($out, MultiDimToOneDimArray($kSepar, $value, $out, $prefix . $key . $kSepar));
+        }
+        else {
+            $out["{$prefix}{$key}"] = $value;
+        }
+    }
+
+    return $out;
+}
+
+function filterBool_NULL_Recursive ($in, $out = []) {
+    foreach ($in as $key => $value) {
+        if (is_array($value)) {           
+            $out[$key] = filterBool_NULL_Recursive($value);
+        }
+        else {
+            if (in_array($value, ['true', 'false'])) {
+              $out[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN);  
+            }
+            else if ($value == '::null::') {
+             $out[$key] = null; 
+            } else {
+              $out[$key] = $value;
+            }            
+        }
+    }
+
+    return $out;
+}
+
+
+
 
 function readyFormData($appConfig, $ConfMeta) { 
   $readyData = [
@@ -91,9 +124,12 @@ function readyFormData($appConfig, $ConfMeta) {
 
 function buildInputHTML($confArea, $attrName, $inputData = []) {
   
-  $html = $attrNameStr = $attrIdStr = $inputLabelText = '';
-  $explAttrName = explode('|', $attrName);
+  $html = $attrNameStr = $attrIdStr = $inputLabelText = '';  
 
+  $classlocalConfig = '';
+
+
+  $explAttrName = explode('|', $attrName);
   foreach ($explAttrName as $nameVal) {
     $attrNameStr .= '['.$nameVal.']';
     $attrIdStr .= '_'.$nameVal;
@@ -101,8 +137,9 @@ function buildInputHTML($confArea, $attrName, $inputData = []) {
   $attrNameStr = $confArea.$attrNameStr;
 
   $explInputLabel = explode('|', $inputData['label']);
+  $inputLabelText = $confArea . '->';
   foreach ($explInputLabel as $k => $value) {
-    $d = ($k+1 == count($explInputLabel)) ? '' : ' | ';
+    $d = ($k+1 == count($explInputLabel)) ? '' : '->';
     $inputLabelText .= ($k+1 == count($explInputLabel) || $k+1 == count($explInputLabel)-1) ?  '<b>'.$value.'</b>'.$d : $value.$d; 
   }
 
@@ -115,7 +152,7 @@ function buildInputHTML($confArea, $attrName, $inputData = []) {
     $size = (strlen($inputData['val']) > 12) ? strlen($inputData['val'])+3 : 12;    
 
     $html .=
-    '<div class="form-group">';
+    '<div class="form-group '.$classlocalConfig.'">';
       $html .=
       '<p><label for="'.$attrIdStr.'">'.$inputLabelText .'</label></p>';    
       $html .=
@@ -135,11 +172,12 @@ function buildInputHTML($confArea, $attrName, $inputData = []) {
     foreach ([true, false] as $iVal) {
       $checked = (boolval($inputData['val']) == boolval($iVal)) ? ' checked' : $disabled;
       $labelBoolTxt = (boolval($iVal)) ? 'true' : 'false';
+      $lnputBoolTxt = (boolval($iVal)) ? (bool)1 : false;
 
       $html .=
-      '<div class="form-check form-check-inline">';
+      '<div class="form-check form-check-inline '.$classlocalConfig.'">';
         $html .=
-        '<input type="radio" class="form-check-input" name="'.$attrNameStr.'" value="'.$iVal.'" id="'.$attrIdStr.'_'.$labelBoolTxt.'" '.$checked.' >';
+        '<input type="radio" class="form-check-input" name="'.$attrNameStr.'" value="'.$labelBoolTxt.'" id="'.$attrIdStr.'_'.$labelBoolTxt.'" '.$checked.' >';
         $html .=
         '<label class="form-check-label" for="'.$attrIdStr.'_'.$labelBoolTxt.'">'.$labelBoolTxt.'</label>';  
       $html .=
@@ -147,6 +185,20 @@ function buildInputHTML($confArea, $attrName, $inputData = []) {
     }
     
 
+  } 
+  else if (is_null($inputData['val'])) {
+    $readonly = (isset($inputData['meta']['editable']) && $inputData['meta']['editable'] === false ) ? ' readonly' : '';  
+
+    $size = 20;    
+
+    $html .=
+    '<div class="form-group '.$classlocalConfig.'">';
+      $html .=
+      '<p><label for="'.$attrIdStr.'">'.$inputLabelText .'</label></p>';    
+      $html .=
+      '<p><input type="text" class="form-control" name="'.$attrNameStr.'" value="::null::" id="'.$attrIdStr.'" size="'.$size.'" '.$readonly.' maxlength="400"></p>';
+    $html .=
+    '</div>';  
   }
 
 

@@ -1,0 +1,35 @@
+{
+    "account": {
+        "pageHideWithoutAuction": false
+    },
+    "admin": {
+        "inventory": {
+            "fieldConfig": {
+                "ItemNumber": {
+                    "requirable": false
+                },
+                "Category": {
+                    "title": "Category89",
+                    "requirable": false
+                },
+                "Warranty": {
+                    "requirable": false
+                },
+                "Estimates": {
+                    "requirable": false
+                }
+            }
+        }
+    },
+    "bidding": {
+        "highBidWarningMultiplier": "20"
+    },
+    "captcha": {
+        "secretText": true
+    },
+    "db": {
+        "readonly": {
+            "enabled": true
+        }
+    }
+}

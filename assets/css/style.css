@@ -1,3 +1,16 @@
+.list-group-item {
+  padding: 0.35rem 1.7rem;
+}
+form[name="appConfigForm"] .list-group {
+  width: 100%;
+}
+form[name="appConfigForm"] .list-group.data {
+  border: none;
+  border-bottom: 1px solid rgba(0,0,0,.035);
+}
+form[name="appConfigForm"] p {
+  margin-bottom: 7px;
+}
 form[name="appConfigForm"] {
   position: relative;
   width: 100%;
@@ -21,3 +34,7 @@ form[name="appConfigForm"] button[type="submit"] {
   padding-left: 50px; 
   padding-right: 50px; 
 } 
+
+form[name="appConfigForm"] .list-group-item .localConfig {
+  background: #F0E1FB;
+}

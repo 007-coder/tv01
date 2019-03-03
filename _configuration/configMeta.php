@@ -10,13 +10,19 @@ return [
 
   'account' => [
     'page' => [
-      'editable' => false,      
-      'metaProp1' => 'metaProp1Val',
-      'metaProp2' => 'metaProp2Va1',
+      'editable' => false,   
+      'visible' => false,
+      'required' => true,
+      'type'=>'boolean',
+      'validate' =>[
+        'requider'=>true,        
+        'maxlength'=>30
+      ]
+      /*'metaProp1' => 'metaProp1Val' */
     ],    
     'thumbnailSize' => [
       'editable' => false,
-      'visible' => false           
+      'required' => true,                    
     ]
   ],
 
@@ -24,6 +30,7 @@ return [
     'dashboard' => [        
         'closedAuctions' => [
           'editable' => false,
+          'required' => true,
           'metaProp2' => 'metaProp2Va1'
         ],
     ],

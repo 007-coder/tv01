@@ -2,6 +2,7 @@
 $appConfig = $confFormViewData['appConfig'];
 $formNav = $confFormViewData['formNav'];
 $ConfMeta = $confFormViewData['configMeta'];
+$coreLocalConfOneDim = MultiDimToOneDimArray('|',$coreLocalConf);
 ?>
 
 <!DOCTYPE html>
@@ -19,7 +20,7 @@ $ConfMeta = $confFormViewData['configMeta'];
 
   <body>
 
-    <div class="container">
+    <div class="container"> 
 
       <div class="row">
         <div class="col-sm-12 col-md-12">
@@ -85,10 +86,12 @@ $ConfMeta = $confFormViewData['configMeta'];
                     <?php if (empty($configAreaData)) {?>
                       <h2 class="text-center">no config available</h2>
                     <?php } else { ?>
-                      <ul class="list-group">
+                      <ul class="list-group data">
                       <?php 
-                      foreach ($configAreaData as $attrName => $input) { ?>
-                        <li class="list-group-item">
+                      foreach ($configAreaData as $attrName => $input) {
+                      $classlocalConfig = (isset($coreLocalConfOneDim[$configArea.'|'.$attrName])) ? ' localConfig' : '';
+                      ?>
+                        <li class="list-group-item <?php echo $classlocalConfig ?>">
                           <?php echo buildInputHTML($configArea, $attrName, $input); ?>
                         </li>                         
                       <?php }?>
