@@ -80,8 +80,6 @@ $coreLocalConfOneDim = MultiDimToOneDimArray('|',$coreLocalConf);
                     ?>
                   </div>
 
-
-
                   <div class="input-group mb-3">
                     <?php if (empty($configAreaData)) {?>
                       <h2 class="text-center">no config available</h2>

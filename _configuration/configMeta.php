@@ -11,18 +11,18 @@ return [
   'account' => [
     'page' => [
       'editable' => false,   
-      'visible' => false,
-      'required' => true,
+      'visible' => false,    
       'type'=>'boolean',
       'validate' =>[
-        'requider'=>true,        
-        'maxlength'=>30
+        'requider'=>true,       
       ]
       /*'metaProp1' => 'metaProp1Val' */
     ],    
     'thumbnailSize' => [
       'editable' => false,
-      'required' => true,                    
+      'validate' =>[
+        'requider'=>true,       
+      ]                   
     ]
   ],
 

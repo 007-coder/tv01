@@ -5,15 +5,16 @@ function wrap_pre($data, $title='' ) {
 }
 
 function prepareInput ($meta = [], $in, $out = [], $prefix = '') {
+
     foreach ($in as $key => $value) {
-        $currMeta = (isset($meta[$key]) && count($meta[$key])) ? $meta[$key] : [];
+        $currMeta = (isset($meta[$key]) && count($meta[$key])) ? $meta[$key] : [];        
 
         if (is_array($value)) {
             $out = array_merge($out, prepareInput($currMeta, $value, $out, $prefix . $key . '|'));
         }
         else {
             $out["{$prefix}{$key}"] = [
-              'val'=> $value,
+              'val'=> $value,              
               'label' => $prefix.$key,
               'meta' => $currMeta              
             ];
@@ -83,6 +84,7 @@ function readyFormData($appConfig, $ConfMeta) {
     ];
 
     $inputGroupeMeta = (isset($ConfMeta[$сKey]) && count($ConfMeta[$сKey])) ? $ConfMeta[$сKey] : [];
+
     $prepareGroupeInputs = prepareInput($inputGroupeMeta, $сValue);
 
     foreach ($prepareGroupeInputs as $propName => $inputData) {               
