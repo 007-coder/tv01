@@ -1,12 +1,22 @@
 <?php
 
-// remove in real using
-const __PHP_ASSETS__ = '/somePath';
-const __SUBDIRECTORY__ = '/someDir';
-const __LOGS__ = '/someLogsDir';
-const __DOCROOT__ = '/someRootDir';
-const __RESELLER_FILES__ = '/someResselerFiles';
-// remove in real using
+// remove for real using
+if (!defined('__PHP_ASSETS__')) {
+    define('__PHP_ASSETS__', '/somePath');
+}
+if (!defined('__SUBDIRECTORY__')) {
+    define('__SUBDIRECTORY__', '/someDir');
+}
+if (!defined('__LOGS__')) {
+    define('__LOGS__', '/someLogsDir');
+}
+if (!defined('__DOCROOT__')) {
+    define('__DOCROOT__', '/someRootDir');
+}
+if (!defined('__RESELLER_FILES__')) {
+    define('__RESELLER_FILES__', '/someResselerFiles');
+}
+// remove for real using
 
 
 use Sam\Observer\AbsenteeBidObserver;

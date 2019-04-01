@@ -16,7 +16,11 @@
     <div class="container"> 
       <div class="row">
         <div class="col-sm-12 col-md-12">          
-          <h1 class="mb-5">Application config</h1>
+          <h1 class="mb-5">
+              Application config for
+              <span class="badge badge-success"><?php echo $tmplData['configName'] ?></span>
+               <span class="h3">config name.</span>
+          </h1>
 
           <?php if (count($tmplData['formData']['form'])) { ?>
             <h4 class="text-center">Navigation</h4>
@@ -28,7 +32,46 @@
                   <a class="nav-link" href="<?php echo $navValue['urlHash'].'-options' ?>"><?php echo  $navValue['name']?></a>                
                 </li>
               <?php } ?>            
-            </ul>            
+            </ul>
+
+              <?php
+              // Display render errors
+              if (
+                  isset($tmplData['renderErrors']) && count($tmplData['renderErrors'])
+              ) {
+                  foreach ($tmplData['renderErrors'] as $errorText) { ?>
+                   <div class="row justify-content-center mb-3">
+                       <div class="col-md-7 col-sm-7">
+                           <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                               <?php echo $errorText ?>
+                               <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                   <span aria-hidden="true">&times;</span>
+                               </button>
+                           </div>
+                       </div>
+                   </div>
+              <?php }
+              }
+
+              // Display config updation status message
+              if (isset($tmplData['configUpdated'])) {
+                  $alertClass = ($tmplData['configUpdated']) ? ' alert-success' : ' alert-danger';
+                  $errorText = ($tmplData['configUpdated'])
+                      ? 'Configuration updated successfully!' : 'Configuration was not updated!'
+                  ?>
+                <div class="row justify-content-center mb-3 mt-3">
+                    <div class="col-md-7 col-sm-7">
+                        <div class="alert <?php echo $alertClass; ?> alert-dismissible fade show" role="alert">
+                            <?php echo $errorText ?>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+              <?php } ?>
+
+
 
             <form action="<?php echo $tmplData['formActionUrl'] ?>" name="appConfigForm" method="post">
               <ul class="list-group list-group-flush">
@@ -76,6 +119,7 @@
                         $classlocalConfig = ($input['fromLocalConfig']) ? ' localConfig' : '';
                         ?>
                           <li class="list-group-item <?php echo $classlocalConfig ?>">
+                              <a name="<?php echo 'option-'.$configArea.'-'.$attrName; ?>"></a>
                             <?php echo buildInputHTML($configArea, $attrName, $input); ?>
                           </li>                         
                         <?php }?>
@@ -96,14 +140,13 @@
                   <button type="submit" class="btn btn-success btn-lg">Submit</button>                
                 </div>
               </div>
-              <?php // Submit button end ?>            
+              <?php // Submit button end ?>  
+              
+              <input type="hidden" name="configName" value="<?php echo $tmplData['configName'] ?>">          
             </form>
 
 
             <h4 class="text-center"><a href="#navigation">to top</a></h4>
-
-
-            <?php //echo wrap_pre($tmplData, '$tmplData'); ?>
 
 
           <?php } else { ?>
