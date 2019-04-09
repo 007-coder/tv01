@@ -35,16 +35,10 @@ class ConfigEditor extends \CustomizableClass
     protected $localConfig = [];
 
     /**
-     * Array with meta data for current config name
+     * Array with meta data for current config name with ['datatype'] and ['validate'] keys
      * @var array
      */
-    protected $configMeta = [];
-
-    /** Combined array with config data types from
-     * global config file + from $this->configName.'meta.php'
-     * @var array
-     */
-    protected $configDataTypes = [];
+    protected $configMetaFull = [];
 
     /**
      * Contains array with list of valid config names
@@ -97,12 +91,35 @@ class ConfigEditor extends \CustomizableClass
 
         $fileConfigMeta = self::PATH_CONFIG . DS . $this->configName . '.meta.php';
         if (file_exists($fileConfigMeta)) {
-            $this->configMeta = require($fileConfigMeta);
+            $configMeta = require($fileConfigMeta);
+            $this->configMetaFull = buildConfigMetaFull($this->globalConfig, $configMeta, true);
         }
 
-        $this->configDataTypes = buildConfigDataTypes($this->globalConfig, $this->configMeta);
+    }
 
+    /**
+     * Return valid config names array
+     * @return array
+     */
+    public function getValidConfigNames()
+    {
+        return $this->validConfigNames;
+    }
 
+    /**
+     * Set valid config names for $this->validConfigNames
+     * @param $namesArr
+     * @return void
+     */
+    public function setValidConfigNames($namesArr)
+    {
+        if (is_array($namesArr) && count ($namesArr)) {
+            foreach ($namesArr as $item) {
+               $this->validConfigNames[] = (is_string($item)) ? $item : '';
+            }
+        } else {
+            throw new Exception("Method argument must be an array!");
+        }
     }
 
 
@@ -129,10 +146,14 @@ class ConfigEditor extends \CustomizableClass
 
         unset($this->postData['configName']);
         $this->setPostData($this->postData);
+        $oneDimPost = laravelHelpersArrDot($this->postData);
+        $oneDimMeta = MultiDimToOneDimArray('.', $this->configMetaFull);
 
-        $validationRules = getValidationRules($this->postData, $this->configMeta);
+        wrap_pre($oneDimPost, '$oneDimPost ');
+        wrap_pre($oneDimMeta , '$oneDimMeta');
 
 
+        /*$validationRules = getValidationRules($this->postData, $this->configMeta);
         // дописать!!!
         foreach ($this->postData as $key => $value) {
             $this->validatePostValue(
@@ -140,9 +161,8 @@ class ConfigEditor extends \CustomizableClass
             );
 
         }
+        wrap_pre($this->postData, '$this->postData in ' . __METHOD__);*/
 
-        wrap_pre($this->postData, '$this->postData in ' . __METHOD__);
-        //wrap_pre($this->validationErrors, '$this->validationErrors');
 
         return $isValid;
     }
