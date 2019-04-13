@@ -38,3 +38,7 @@ form[name="appConfigForm"] button[type="submit"] {
 form[name="appConfigForm"] .list-group-item .localConfig {
   background: #F0E1FB;
 }
+
+form[name="appConfigForm"] .list-group-item .validationError {
+  background: #f8d7da;
+}

@@ -1,28 +1,30 @@
-<?php 
-define ('DS',DIRECTORY_SEPARATOR);
+<?php
+define('DS', DIRECTORY_SEPARATOR);
 
 define('BASE_URL',
-    $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST']
-    .$_SERVER['REQUEST_URI']
+    $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST']
+    . $_SERVER['REQUEST_URI']
 );
 define('BASE_DIR', __DIR__);
-define('DIR_SAM_CONFIG', __DIR__.DS.'Sam'.DS.'Installation'.DS.'Config');
+define('DIR_SAM_CONFIG', BASE_DIR . DS . 'Sam' . DS . 'Installation' . DS . 'Config');
+define('DIR_SAM_VALIDATE', BASE_DIR . DS . 'Sam' . DS . 'Core' . DS . 'Validate');
 
-require_once(__DIR__ . DS . 'functions.php');
+require_once BASE_DIR . DS . 'functions.php';
 
-require_once(DIR_SAM_CONFIG . DS . 'CustomizableClass.php');
-require_once(DIR_SAM_CONFIG . DS . 'ConfigCombiner.php');
-require_once(DIR_SAM_CONFIG . DS . 'ConfigEditor.php');
-require_once(DIR_SAM_CONFIG . DS . 'ConfigFormRenderer.php');
-require_once(DIR_SAM_CONFIG . DS . 'ValidatorClass.php');
+require_once DIR_SAM_CONFIG . DS . 'CustomizableClass.php';
+require_once DIR_SAM_CONFIG . DS . 'ConfigCombiner.php';
+require_once DIR_SAM_CONFIG . DS . 'ConfigEditor.php';
+require_once DIR_SAM_CONFIG . DS . 'ConfigFormRenderer.php';
+
+require_once DIR_SAM_CONFIG . DS . 'ConfigValidator.php';
+require_once DIR_SAM_VALIDATE . DS . 'NumberValidator.php';
+require_once DIR_SAM_VALIDATE . DS . 'Floating.php';
 
 use Sam\Installation\Config\ConfigCombiner;
 use Sam\Installation\Config\ConfigEditor;
 use Sam\Installation\Config\ConfigFormRenderer;
 
-
-
-class Foo {
+/*class Foo {
 
     private $sourceArray = [
         'key0' => 'value0',
@@ -77,12 +79,10 @@ class Foo {
     {
         return $this->resultArray;
     }
-}
+}*/
 
 /*$foo = new Foo();
 wrap_pre($foo->getResultArray(), '$foo->getResultArray()');*/
-
-
 
 $editorErrors = [];
 $configUpdated = false;
@@ -99,23 +99,35 @@ if (isset($_POST) && count($_POST)) {
 }
 
 // processing POST
-if (isset($_POST) && count($_POST)) {
+/*if (isset($_POST) && count($_POST)) {
   $configEditor = ConfigEditor::getInstance();
   $configEditor->setConfigName($configName);
   $configEditor->setPostData($_POST);
 
   if ($configEditor->validate()){
-    $configUpdated = ($configEditor->updateConfig()) ? true : false;
+    $configUpdated = $configEditor->updateConfig();
   } else {
       $editorErrors = $configEditor->getErrors();
-  }
-}
 
+      wrap_pre($editorErrors, '$editorErrors in '.__FILE__);
+  }
+}*/
 
 $configCombiner = ConfigCombiner::getInstance();
 $configCombiner->setConfigName($configName);
 
+// processing POST
 if (isset($_POST) && count($_POST)) {
+    $configEditor = ConfigEditor::getInstance();
+    $configEditor->setConfigName($configName);
+    $configEditor->setPostData($_POST);
+
+    if ($configEditor->validate()) {
+        $configUpdated = $configEditor->updateConfig();
+    } else {
+        $editorErrors = $configEditor->getErrors();
+    }
+
     $configCombiner->setEditorValidationErrors($editorErrors);
 }
 
@@ -126,11 +138,13 @@ if ($configCombiner->validate()) {
 } else {
     $data['page'] = 'error';
 }
-
-if (isset($_POST) && count($_POST)){
+$data['renderErrors'] = $configCombiner->getErrors();
+if (isset($_POST) && count($_POST)) {
     $data['configUpdated'] = $configUpdated;
 }
-$data['renderErrors'] = $configCombiner->getErrors();
+
+
+// Render Config Form
 $renderer = ConfigFormRenderer::getInstance();
 $renderer->setViewData($data);
 $renderer->render();

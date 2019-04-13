@@ -1,8 +1,6 @@
 <?php
-
 namespace Sam\Installation\Config;
 
-use Sam\Installation\Config\ValidatorClass;
 
 /**
  * Class ConfigEditor
@@ -53,6 +51,12 @@ class ConfigEditor extends \CustomizableClass
     protected $postData = [];
 
     /**
+     * Contains data ready for update local config from POST request
+     * @var array
+     */
+    protected $updateLocalConfigData = [];
+
+    /**
      * Contains array with POST data validation errors
      * @var array
      */
@@ -84,12 +88,12 @@ class ConfigEditor extends \CustomizableClass
 
         $fileGlobalConfig = self::PATH_CONFIG . DS . $this->configName . '.php';
         if (file_exists($fileGlobalConfig)) {
-            $this->globalConfig = require($fileGlobalConfig);
+            $this->globalConfig = require $fileGlobalConfig;
         }
 
         $fileConfigMeta = self::PATH_CONFIG . DS . $this->configName . '.meta.php';
         if (file_exists($fileConfigMeta)) {
-            $configMeta = require($fileConfigMeta);
+            $configMeta = require $fileConfigMeta;
             $this->configMetaFull = buildConfigMetaFull($this->globalConfig, $configMeta, true);
         }
     }
@@ -110,12 +114,14 @@ class ConfigEditor extends \CustomizableClass
      */
     public function setValidConfigNames($namesArr)
     {
-        if (is_array($namesArr) && count($namesArr)) {
-            foreach ($namesArr as $item) {
-                $this->validConfigNames[] = (is_string($item)) ? $item : '';
+        if (is_array($namesArr)) {
+            if (count($namesArr)) {
+                foreach ($namesArr as $item) {
+                    $this->validConfigNames[] = (is_string($item)) ? $item : '';
+                }
             }
         } else {
-            throw new Exception("Method argument must be an array!");
+            throw new RuntimeException("Method argument must be an array!");
         }
     }
 
@@ -141,27 +147,25 @@ class ConfigEditor extends \CustomizableClass
             unset($this->postData['configName']);
             $this->setPostData($this->postData);
         }
-
         $isValid = false;
-        $validator = new ValidatorClass();
 
-        $oneDimPost = laravelHelpersArrDot($this->postData);
-        $oneDimMeta = MultiDimToOneDimArray('.', $this->configMetaFull);
+        $validator = new ConfigValidator;
+        $delimiter = '.';
 
-        wrap_pre($oneDimPost, '$oneDimPost ');
-        //wrap_pre($oneDimMeta, '$oneDimMeta');
+        $oneDimPost = laravelHelpersArrDot($this->postData, $delimiter);
+        $oneDimMeta = MultiDimToOneDimArray($delimiter, $this->configMetaFull);
 
         $validatedKeys = [];
         $countErrors = 0;
         foreach ($oneDimPost as $configKey => $value) {
             $dataType = $oneDimMeta[$configKey]['dataType'];
-            $validations = $oneDimMeta[$configKey]['validate'];
+            //$validations = $oneDimMeta[$configKey]['validate'];
 
             $errorMessages = [];
             $isCurrValid = true;
 
             switch ($dataType) {
-                case "boolean":
+                case ConfigValidator::T_BOOL:
                     if ($validator->isBoolean($value)) {
 
                     } else {
@@ -169,32 +173,55 @@ class ConfigEditor extends \CustomizableClass
                         $errorMessages[] = $validator->getErrorMessage($dataType);
                     }
                     break;
-                case "integer":
-                    $isCurrValid = false;
 
+                case ConfigValidator::T_INTEGER:
+                    if ($validator->isInteger($value)) {
+
+                    } else {
+                        $isCurrValid = false;
+                        $errorMessages[] = $validator->getErrorMessage($dataType);
+                    }
                     break;
-                case "double":
-                    $isCurrValid = false;
 
+                case ConfigValidator::T_DOUBLE:
+                    if ($validator->isDouble($value)) {
+
+                    } else {
+                        $isCurrValid = false;
+                        $errorMessages[] = $validator->getErrorMessage($dataType);
+                    }
                     break;
-                case "string":
-                    $isCurrValid = false;
 
+                case ConfigValidator::T_STRING:
+                    if ($validator->isString($value)) {
+
+                    } else {
+                        $isCurrValid = false;
+                       $errorMessages[] = $validator->getErrorMessage($dataType);
+                    }
                     break;
-                case "NULL":
-                    $isCurrValid = false;
 
+                case ConfigValidator::T_NULL:
+                    if ($validator->isNULL($value)) {
+
+                    } else {
+                        $isCurrValid = false;
+                        $errorMessages[] = $validator->getErrorMessage($dataType);
+                    }
                     break;
             }
 
+            // if get validation error
             if ($isCurrValid === false) {
                 $countErrors++;
                 $errorValue = [
                     'inputId' => $configKey,
                     'messages' => $errorMessages,
+                    'dimensionStop' => true
                 ];
                 $currError = [];
-                laravelHelpersArrSet($currError, $configKey, $errorValue, '.');
+                laravelHelpersArrSet($currError, $configKey, $errorValue, $delimiter);
+
                 $this->validationErrors = array_merge_recursive(
                     $this->validationErrors,
                     $currError
@@ -204,12 +231,18 @@ class ConfigEditor extends \CustomizableClass
             }
 
         }
-        $this->validationErrors['countErrors'] = $countErrors;
+
+        if (count($this->validationErrors)) {
+            $this->validationErrors['countErrors'] = $countErrors;
+        }
+
         if (count($validatedKeys) == count($oneDimPost)) {
            $isValid = true;
         }
 
-        wrap_pre($this->validationErrors, '$this->validationErrors');
+        wrap_pre($oneDimPost, '$oneDimPost ');
+        wrap_pre($validatedKeys, '$validatedKeys');
+        //wrap_pre($this->validationErrors, '$this->validationErrors');
 
         return $isValid;
     }
@@ -221,9 +254,9 @@ class ConfigEditor extends \CustomizableClass
      * @param array $dataType
      * @return boolean
      */
-    protected function validatePostValue($key, $postValue, $validationRules = [], $dataType = [], $oSubPath = '')
+    /*vprotected function alidatePostValue($key, $postValue, $validationRules = [], $dataType = [], $oSubPath = '')
     {
-        $validator = new ValidatorClass();
+        $validator = new ConfigValidator;
         $isValid = true;
 
         $strDelim = '->';
@@ -254,7 +287,7 @@ class ConfigEditor extends \CustomizableClass
                     $currError
                 );
 
-                /*switch ($dataType[$pKey]) {
+                switch ($dataType[$pKey]) {
                     case "boolean":
                         if ($validator->isBoolean($item)) {
 
@@ -275,18 +308,18 @@ class ConfigEditor extends \CustomizableClass
                     case "NULL":
 
                         break;
-                }*/
-                /*if ($isValid === false) {
+                }
+                if ($isValid === false) {
 
 
                     $this->validationErrors = array_merge(
                         $this->validationErrors,
                         $currentError
-                    );
-                }*/
+                    )
+                }
             }
         }
-    }
+    }*/
 
     /**
      * Lead $data to needed data type
@@ -294,20 +327,23 @@ class ConfigEditor extends \CustomizableClass
      * @param string $toType
      * @return string
      */
-    protected function leadToType($data = '', $toType = '')
+    /*protected function leadToType($data = '', $toType = '')
     {
         $leadedData = '';
 
         return $leadedData;
-    }
+    }*/
+
+
 
     /**
      * Update content of local config file for current config name.
      * $this->configName.'local.php'
-     * return @void
+     * @return boolean
      */
     public function updateConfig()
     {
+        return false;
 
     }
 

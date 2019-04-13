@@ -1,7 +1,6 @@
 <?php
 
-use Sam\Installation\Config\ValidatorClass;
-
+use Sam\Installation\Config\ConfigValidator;
 
 // В этом файле устанавливаются настройки доступности
 // полей на редактирования а так же мета-свойства полей
@@ -12,82 +11,79 @@ use Sam\Installation\Config\ValidatorClass;
 
 return [
 
-  'account' => [
-    'page' => [
-      'editable' => true,
-      'visible' => true,
-        
-        // data type
-      'inputDataType'=> ValidatorClass::T_BOOL,
-      'validate' =>[
-        'required'=>true,
-        'validationRules'=> ['isInteger']
-      ]
-    ],    
-    'thumbnailSize' => [
-      'editable' => true,
-      'validate' =>[
-        'required'=>true,
-      ]                   
-    ]
-  ],
+    'account' => [
+        'page' => [
+            'editable' => true,
+            'visible' => true,
 
-  'admin' => [
-    'dashboard' => [        
-        'closedAuctions' => [
-          'editable' => true,
-            'validate' =>[
-                'validationRules'=> ['isTest']
-            ]
-        ]
-    ],
-
-    'auction' => [
-        'lastBids' => [
-          'refreshTimeout' => [
-            'editable' => false            
-          ]
-        ],     
-        'lots' => [            
-            'syncTimeout' => [
-              'editable' => false,
-            ],            
-            'quickEditLotLimit' => [
-              'editable' => false,
+            // data type
+            'inputDataType' => ConfigValidator::T_BOOL,
+            'validate' => [
+                'required' => true,
+                'validationRules' => ['isInteger'],
+            ],
+        ],
+        'thumbnailSize' => [
+            'editable' => true,
+            'validate' => [
+                'required' => true,
             ],
         ],
     ],
 
-    'inventory' => [
-      'fieldConfig' =>[
-        'LotStatus' => [
-          'title' => [
-            'editable' => false            
-          ]
+    'admin' => [
+        'dashboard' => [
+            'closedAuctions' => [
+                'editable' => true,
+                'validate' => [
+                    'validationRules' => ['isTest'],
+                ],
+            ],
         ],
-        'ItemNumber' => [
-            'requirable' => [
-                'validate' =>[
-                    'validationRules'=> ['isTest454']
-                ]
-            ]
-        ]
 
-      ]
+        'auction' => [
+            'lastBids' => [
+                'refreshTimeout' => [
+                    'editable' => false,
+                ],
+            ],
+            'lots' => [
+                'syncTimeout' => [
+                    'editable' => false,
+                ],
+                'quickEditLotLimit' => [
+                    'editable' => false,
+                ],
+            ],
+        ],
+
+        'inventory' => [
+            'fieldConfig' => [
+                'LotStatus' => [
+                    'title' => [
+                        'editable' => false,
+                    ],
+                ],
+                'ItemNumber' => [
+                    'requirable' => [
+                        'validate' => [
+                            'validationRules' => ['isTest454'],
+                        ],
+                    ],
+                ],
+
+            ],
+
+        ],
+
+        'user' => [
+            'reseller' => [
+                'auctionBidderCertUploadDir' => [
+                    'editable' => false,
+                ],
+            ],
+        ],
 
     ],
-
-    'user' => [
-      'reseller' => [
-        'auctionBidderCertUploadDir' => [
-          'editable' => false
-        ],
-      ]
-    ]
-
-
-  ]
-
-
 
 ];

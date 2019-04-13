@@ -11,14 +11,18 @@ function wrap_pre($data, $title = '')
     echo '<pre><h4>' . $readyTitle . $countData . ' </h4>' . print_r($data, true) . '</pre>';
 }
 
-function prepareInput($meta = [], $in, $out = [], $prefix = '')
+function prepareInput($in, $meta = [], $delimiter = '|', $out = [], $prefix =
+'')
 {
 
     foreach ($in as $key => $value) {
         $currMeta = (isset($meta[$key]) && count($meta[$key])) ? $meta[$key] : [];
 
         if (is_array($value)) {
-            $out = array_merge($out, prepareInput($currMeta, $value, $out, $prefix . $key . '|'));
+            $out = array_merge($out, prepareInput(
+                $value, $currMeta, $delimiter, $out,
+                $prefix . $key . $delimiter)
+            );
         } else {
             $out["{$prefix}{$key}"] = [
                 'val' => $value,
@@ -76,7 +80,7 @@ function filterBool_NULL_Recursive($in, $out = [])
     return $out;
 }
 
-function readyFormData($appConfig, $ConfMeta)
+function readyFormData($appConfig, $ConfMeta, $delimiter = '|')
 {
     $readyData = [
 
@@ -88,8 +92,8 @@ function readyFormData($appConfig, $ConfMeta)
         'statistics' => [],
     ];
 
-    foreach ($appConfig as $сKey => $сValue) {
-        $readyData['statistics'][$сKey] = [
+    foreach ($appConfig as $cKey => $cValue) {
+        $readyData['statistics'][$cKey] = [
             'visability' => [
                 'visible' => 0,
                 'hidden' => 0,
@@ -100,20 +104,22 @@ function readyFormData($appConfig, $ConfMeta)
             ],
         ];
 
-        $inputGroupeMeta = (isset($ConfMeta[$сKey]) && count($ConfMeta[$сKey])) ? $ConfMeta[$сKey] : [];
+        $inputGroupeMeta = (isset($ConfMeta[$cKey]) && count($ConfMeta[$cKey]))
+            ? $ConfMeta[$cKey]
+            : [];
 
-        $prepareGroupeInputs = prepareInput($inputGroupeMeta, $сValue);
+        $prepareGroupeInputs = prepareInput($cValue, $inputGroupeMeta, $delimiter);
 
         foreach ($prepareGroupeInputs as $propName => $inputData) {
             if (
                 !isset($inputData['meta']['visible']) ||
                 (isset($inputData['meta']['visible']) && $inputData['meta']['visible'] === true)
             ) {
-                $readyData['form'][$сKey][$propName] = $inputData;
-                $readyData['statistics'][$сKey]['visability']['visible']++;
+                $readyData['form'][$cKey][$propName] = $inputData;
+                $readyData['statistics'][$cKey]['visability']['visible']++;
             } //
             else if (isset($inputData['meta']['visible']) && $inputData['meta']['visible'] === false) {
-                $readyData['statistics'][$сKey]['visability']['hidden']++;
+                $readyData['statistics'][$cKey]['visability']['hidden']++;
             }
 
             // Статистика для полей не доступных для редактирования
@@ -121,10 +127,10 @@ function readyFormData($appConfig, $ConfMeta)
                 !isset($inputData['meta']['editable']) ||
                 (isset($inputData['meta']['editable']) && $inputData['meta']['editable'] === true)
             ) {
-                $readyData['statistics'][$сKey]['allowForEdit']['allowed']++;
+                $readyData['statistics'][$cKey]['allowForEdit']['allowed']++;
             } //
             else if (isset($inputData['meta']['editable']) && $inputData['meta']['editable'] === false) {
-                $readyData['statistics'][$сKey]['allowForEdit']['disabled']++;
+                $readyData['statistics'][$cKey]['allowForEdit']['disabled']++;
             }
         }
     }
@@ -132,29 +138,46 @@ function readyFormData($appConfig, $ConfMeta)
     return $readyData;
 }
 
-function buildInputHTML($confArea, $attrName, $inputData = [])
+function readyFormValidationErrors($errors, $delimiter = '|')
+{
+    $readyErrors = [];
+    unset($errors['countErrors']);
+    foreach ($errors as $area => $error) {
+        $tmp = [];
+        array_push($tmp, MultiDimToOneDimArray($delimiter, $error));
+        $readyErrors[$area] = $tmp[0];
+    }
+
+    return $readyErrors;
+}
+
+
+function buildInputHTML($confArea, $attrName, $inputData = [], $delimiter = '|')
 {
     $html = $attrNameStr = $inputLabelText = '';
     $attrIdStr = $confArea;
 
-    $explAttrName = explode('|', $attrName);
+    $explAttrName = explode($delimiter, $attrName);
     foreach ($explAttrName as $nameVal) {
         $attrNameStr .= '[' . $nameVal . ']';
         $attrIdStr .= '_' . $nameVal;
     }
     $attrNameBase = $confArea . $attrNameStr;
-    $attrNameStr = $attrNameBase/*.'[val]'*/
-    ;
-    $attrDataTypeStr = $attrNameBase/*.'[dataType]'*/
-    ;
+    $attrNameStr = $attrNameBase;
+    $attrDataTypeStr = $attrNameBase;
 
-    $explInputLabel = explode('|', $inputData['label']);
+    $explInputLabel = explode($delimiter, $inputData['label']);
     $inputLabelText = $confArea . '->';
+    $toTopLink = '<span class="to_top ml-3"><a href="#navigation">to top</a></span>';
+
     foreach ($explInputLabel as $k => $value) {
         $d = ($k + 1 == count($explInputLabel)) ? '' : '->';
-        $inputLabelText .= ($k + 1 == count($explInputLabel) || $k + 1 == count($explInputLabel) - 1)
-            ? '<b>' . $value . '</b>' . $d : $value . $d;
+        $inputLabelText .=
+            ($k + 1 == count($explInputLabel) || $k + 1 == count($explInputLabel) - 1)
+            ? '<b>' . $value . '</b>' . $d
+            : $value . $d;
     }
+    $inputLabelText = $inputLabelText.$toTopLink;
 
     //wrap_pre($inputData, '$inputData|file: '.__FUNCTION__.'()|l:'.__LINE__);
     //wrap_pre($attrNameStr, '$attrNameStr|file: '.__FUNCTION__.'()|l:'.__LINE__);
@@ -182,10 +205,14 @@ function buildInputHTML($confArea, $attrName, $inputData = [])
 
     $inputErrorCont = '';
     if ($inputData['validation']['error']) {
+        $inputErrorText = '';
+        if (count($inputData['validation']['errorText'])) {
+            foreach ($inputData['validation']['errorText'] as $errorText) {
+                $inputErrorText .= '<p class="badge badge-danger">'.$errorText.'</p>';
+            }
+        }
         $inputErrorCont =
-            '<p class="inputError">'
-            . $inputData['validation']['errorText'] .
-            '</p>';
+            '<div class="inputError">'. $inputErrorText .'</div>';
     }
 
     $html .=
@@ -237,27 +264,23 @@ function buildInputHTML($confArea, $attrName, $inputData = [])
 
         $size = (strlen($inputData['val']) > 12) ? strlen($inputData['val']) + 3 : 12;
 
-        $hiddenInputDataType = ''/*'<input type="hidden" class="iHidden '.$readonly.' " name="' . $attrDataTypeStr . '"
-                    value="' . $inputData['inputDataType'] . '" id="' . $attrIdStr . '_hiddenDataType" 
-                    ' . $readonly . '>'*/
-        ;
         $html .=
             '<div class="form-group">';
         $html .=
             '<p><label for="' . $attrIdStr . '">' . $inputLabelText . '</label></p>';
         $html .= $inputInfoCont;
-        $html .=
-            '<p>
-                    <input type="text" class="form-control ' . $readonly . ' " name="' . $attrNameStr . '" 
-                    value="' . htmlentities($inputData['val']) . '" id="' . $attrIdStr . '" 
-                    size="' . $size . '" ' . $readonly . ' maxlength="400">
-                    ' . $hiddenInputDataType . '
-                    
-                  </p>';
         $html .= $inputErrorCont;
         $html .=
+            '<p>
+                <input type="text" class="form-control ' . $readonly . ' " name="' . $attrNameStr . '" 
+                    value="' . htmlentities($inputData['val']) . '" id="' . $attrIdStr . '" 
+                    size="' . $size . '" ' . $readonly . ' maxlength="400">                    
+            </p>';
+        $html .=
             '</div>';
-    } // if is Boolean input
+    }
+
+    // if is Boolean input
     else if (is_bool($inputData['val'])) {
         $disabled =
             (
@@ -268,11 +291,7 @@ function buildInputHTML($confArea, $attrName, $inputData = [])
         $html .=
             '<p>' . $inputLabelText . '</p>';
         $html .= $inputInfoCont;
-
-        $hiddenInputDataType = ''/*'<input type="hidden" class="iHidden '.$disabled.' " name="' . $attrDataTypeStr . '"
-                    value="' . $inputData['inputDataType'] . '" id="' . $attrIdStr . '_hiddenDataType" 
-                    ' . $disabled . '>'*/
-        ;
+        $html .= $inputErrorCont;
 
         foreach ([true, false] as $iVal) {
             $checked = (boolval($inputData['val']) == boolval($iVal)) ? ' checked' : '';
@@ -288,9 +307,6 @@ function buildInputHTML($confArea, $attrName, $inputData = [])
                 '</div>';
         }
 
-        $html .= $hiddenInputDataType;
-
-        $html .= $inputErrorCont;
     }
 
     $html .=
@@ -473,6 +489,7 @@ function laravelHelpersArrDot($array, $delimiter = '.', $prepend = '')
 
     return $results;
 }
+
 
 function buildValidationError($inputId, $strDelim = '->', $value = [])
 {
