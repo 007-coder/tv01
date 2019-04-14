@@ -67,23 +67,38 @@
                         : 'Configuration was not updated!'
                     ?>
                     <div class="row justify-content-center mb-3 mt-3">
-                        <div class="col-md-7 col-sm-7">
+                        <div class="col-md-8 col-sm-5">
                             <div class="alert <?php echo $alertClass; ?> alert-dismissible fade show"
                                  role="alert">
-                                <?php echo $errorText ?>
+
+                                <h4 class="text-center"><?php echo $errorText ?></h4>
 
                                 <?php if (count($tmplData['formData']['validationErrors'])) { ?>
                                     <div class="validationErrorsWrap">
-                                        <p>You made mistakes for the following
+                                        <p class="mb-2">You made mistakes for the following
                                             values:</p>
                                         <?php foreach ($tmplData['formData']['validationErrors'] as $validationError) { ?>
-                                            <p class="mb-0"><a
-                                                        href="<?php echo $validationError['hash']
-                                                        ?>">
-                                                    <?php echo $validationError['title']
-                                                    ?>
+                                            <p class="mb-1">
+                                                <a href="<?php echo $validationError['hash']?>" class="badge badge-danger">
+                                                    <?php echo $validationError['title']?>
                                                 </a>
                                             </p>
+                                        <?php } ?>
+                                    </div>
+
+                                    <div class="validationValidWrap mt-3">
+                                        <p class="mb-2">The following values are valid: </p>
+                                        <?php
+                                        if (count($tmplData['formData']['validationValid'])) {
+                                            foreach ($tmplData['formData']['validationValid'] as $validationValid) { ?>
+                                                <p class="mb-1">
+                                                    <a href="<?php echo $validationValid['hash']?>" class="badge badge-success">
+                                                        <?php echo $validationValid['title']?>
+                                                    </a>
+                                                </p>
+                                            <?php } ?>
+                                        <?php } else { ?>
+                                            <h5 class="mb-2 text-center"><b>No valid values!</b></h5>
                                         <?php } ?>
                                     </div>
                                 <?php } ?>
@@ -150,8 +165,10 @@
                                                     ? ' localConfig' : '';
                                                 $errorClass = ($input['validation']['error'])
                                                     ? ' validationError' : '';
+                                                $validClass = isset($input['validation']['post']['value'])
+                                                    ? ' validationValid' : '';
                                                 ?>
-                                                <li class="list-group-item <?php echo $classLocalConfig.$errorClass ?>">
+                                                <li class="list-group-item <?php echo $classLocalConfig.$errorClass.$validClass ?>">
                                                     <a name="<?php echo 'option-' . $configArea . '-' . $attrName; ?>"></a>
                                                     <?php echo buildInputHTML($configArea, $attrName, $input, $delimiter); ?>
                                                 </li>

@@ -89,6 +89,25 @@ class ConfigValidator
     }
 
     /**
+     * @param $value
+     * @return bool
+     */
+    public function isIntPositive($value)
+    {
+        return NumberValidator::isIntPositive($value);
+    }
+
+    /**
+     * @param $value
+     * @return bool
+     */
+    public function isIntPositiveOrZero($value)
+    {
+        return NumberValidator::isIntPositiveOrZero($value);
+    }
+
+
+    /**
      * Validation: is value a "float" type
      * @param $value
      * @return bool
@@ -109,6 +128,24 @@ class ConfigValidator
             }
         }*/
         return NumberValidator::isReal($value);
+    }
+
+    /**
+     * @param $value
+     * @return bool
+     */
+    public function isRealPositive($value)
+    {
+        return NumberValidator::isRealPositive($value);
+    }
+
+    /**
+     * @param $value
+     * @return bool
+     */
+    public function isRealPositiveOrZero($value)
+    {
+        return NumberValidator::isRealPositiveOrZero($value);
     }
 
 

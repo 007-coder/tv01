@@ -199,10 +199,6 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
     }
     $inputLabelText = $inputLabelText.$toTopLink;
 
-    //wrap_pre($inputData, '$inputData|file: '.__FUNCTION__.'()|l:'.__LINE__);
-    //wrap_pre($attrNameStr, '$attrNameStr|file: '.__FUNCTION__.'()|l:'.__LINE__);
-    //wrap_pre($attrDataTypeStr, '$attrDataTypeStr|file: '.__FUNCTION__.'()|l:'.__LINE__);
-
     $defInputValue = (isset($input['defaultValue']) && !empty($input['defaultValue']))
         ? ', <a href="#" onclick="return false;" class="badge badge-secondary">' . $input['defaultValue'] . '</a> - default value'
         : '';
@@ -249,8 +245,8 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
             </p>';
     }
 
-    // Дописать!
-    $isSwitchOn = '';
+    // bootstrap Switcher which allow/disallow edit content
+    // of input or radio buttons
     if (is_null($input['validation']['post']['value'])) {
         $isSwitchOn =
         (
@@ -260,8 +256,9 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
 
     } else {
         $isSwitchOn = ' checked';
-        $input['val'] = $input['validation']['post']['value'];
     }
+
+
 
     // ------ prepare data for Checkbox column
 
@@ -281,16 +278,24 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
     $html .=
         '<div class="col-sm-11 col-md-11">';
 
+
     // if is String (numeric or null) Value input
     if (
         is_string($input['val'])
         || is_numeric($input['val'])
         || is_null($input['val'])
     ) {
-        $readonly = (
-            isset($input['meta']['editable'])
-            && $input['meta']['editable'] === true
-        ) ? '' : ' readonly disabled';
+        if (is_null($input['validation']['post']['value'])) {
+            $readonly = (
+                isset($input['meta']['editable'])
+                && $input['meta']['editable'] === true
+            ) ? '' : ' readonly disabled';
+        } else {
+            $readonly = '';
+            $input['val'] = $input['validation']['post']['value'];
+        }
+
+
 
         $size = (strlen($input['val']) > 12) ? strlen($input['val']) + 3 : 12;
 
@@ -312,11 +317,26 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
 
     // if is Boolean input
     else if (is_bool($input['val'])) {
-        $disabled =
+
+        if (is_null($input['validation']['post']['value'])) {
+            $disabled =
             (
                 isset($input['meta']['editable'])
                 && $input['meta']['editable'] === true
             ) ? '' : ' disabled';
+        } else {
+            $disabled = '';
+            $postValue = $input['validation']['post']['value'];
+            $booleans = ['1', 'true', true, 1, '0', 'false', false, 0, 'yes',
+                'no', 'on', 'off'];
+            $booleansTrue = ['1', 'true', true, 1, 'yes', 'on'];
+
+            if (in_array($postValue, $booleans, true)) {
+                $input['val'] = (in_array($postValue, $booleansTrue, true))
+                    ? true : false;
+            }
+        }
+
 
         $html .=
             '<p>' . $inputLabelText . '</p>';

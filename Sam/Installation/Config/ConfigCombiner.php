@@ -147,8 +147,10 @@ class ConfigCombiner extends \CustomizableClass
         $configMetaOneDim = MultiDimToOneDimArray($delimiter, $this->configMeta);
 
 
-        $formValidationErrors = $formValidatedPost =
-        $webData['formData']['validationErrors'] = [];
+        $formValidationErrors =
+        $formValidatedPost = $webData['formData']['validationErrors'] = [];
+
+        // $formValidationErrors
         if (count($this->editorValidationErrors)) {
             $formValidationErrors =
                 readyFormValidationErrors (
@@ -166,9 +168,20 @@ class ConfigCombiner extends \CustomizableClass
             }
         }
 
+        // $formValidatedPost
         if (count($this->validatedPost)) {
             $formValidatedPost =
                 readyFormValidatedPost ($this->validatedPost, $delimiter);
+            foreach ($formValidatedPost as $areaFVP => $dataFVP){
+                foreach ($dataFVP as $subAreaFVP => $valueFVP) {
+                   $webData['formData']['validationValid'][] = [
+                       'title' => $areaFVP.'->'
+                           .str_replace($delimiter, "->", $subAreaFVP),
+                       'hash' => '#option-'.$areaFVP.'-'.$subAreaFVP
+                   ];
+                }
+            }
+
             wrap_pre($formValidatedPost, '$formValidatedPost in '.__FUNCTION__.' s: '.__LINE__);
         }
 

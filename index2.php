@@ -130,8 +130,6 @@ if (isset($_POST) && count($_POST)) {
         $configCombiner->setEditorValidationErrors($editorErrors);
         $configCombiner->setValidatedPost($validatedPost);
     }
-
-
 }
 
 if ($configCombiner->validate()) {
@@ -142,12 +140,13 @@ if ($configCombiner->validate()) {
     $data['page'] = 'error';
 }
 $data['renderErrors'] = $configCombiner->getErrors();
+
 if (isset($_POST) && count($_POST)) {
     $data['configUpdated'] = $configUpdated;
 }
 
 
-// Render Config Form
+// Rendering Config Form
 $renderer = ConfigFormRenderer::getInstance();
 $renderer->setViewData($data);
 $renderer->render();

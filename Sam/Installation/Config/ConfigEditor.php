@@ -227,7 +227,9 @@ class ConfigEditor extends \CustomizableClass
                     'dimensionStop' => true
                 ];
                 $currError = [];
-                laravelHelpersArrSet($currError, $configKey, $errorValue, $delimiter);
+                laravelHelpersArrSet(
+                    $currError, $configKey, $errorValue, $delimiter
+                );
 
                 $this->validationErrors = array_merge_recursive(
                     $this->validationErrors,
@@ -240,7 +242,9 @@ class ConfigEditor extends \CustomizableClass
                     'dimensionStop' => true
                 ];
                 $currValid = [];
-                laravelHelpersArrSet($currValid, $configKey, $validValue, $delimiter);
+                laravelHelpersArrSet(
+                    $currValid, $configKey, $validValue, $delimiter
+                );
                 $this->validatedPost = array_merge_recursive(
                     $this->validatedPost,
                     $currValid
@@ -257,8 +261,8 @@ class ConfigEditor extends \CustomizableClass
            $isValid = true;
         }
 
-        wrap_pre($oneDimPost, '$oneDimPost ');
-        wrap_pre($validatedKeys, '$validatedKeys');
+        wrap_pre($oneDimPost, '$oneDimPost in '.__METHOD__.' L: '.__LINE__);
+        wrap_pre($validatedKeys, '$validatedKeys in '.__METHOD__.' L: '.__LINE__);
         //wrap_pre($this->validationErrors, '$this->validationErrors');
         //wrap_pre($this->validatedPost, '$this->validatedPost');
 
