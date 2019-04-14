@@ -151,11 +151,31 @@ function readyFormValidationErrors($errors, $delimiter = '|')
     return $readyErrors;
 }
 
+function readyFormValidatedPost($post, $delimiter = '|')
+{
+    $readyPost = [];
+    foreach ($post as $area => $value) {
+        $tmp = [];
+        array_push($tmp, MultiDimToOneDimArray($delimiter, $value));
+        $readyPost[$area] = $tmp[0];
+    }
+    return $readyPost;
+}
 
-function buildInputHTML($confArea, $attrName, $inputData = [], $delimiter = '|')
+
+/**
+ * @param $confArea
+ * @param $attrName
+ * @param array $input
+ * @param string $delimiter
+ * @return string
+ */
+function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
 {
     $html = $attrNameStr = $inputLabelText = '';
     $attrIdStr = $confArea;
+
+    //wrap_pre($input, '$input in '.__FUNCTION__);
 
     $explAttrName = explode($delimiter, $attrName);
     foreach ($explAttrName as $nameVal) {
@@ -166,7 +186,7 @@ function buildInputHTML($confArea, $attrName, $inputData = [], $delimiter = '|')
     $attrNameStr = $attrNameBase;
     $attrDataTypeStr = $attrNameBase;
 
-    $explInputLabel = explode($delimiter, $inputData['label']);
+    $explInputLabel = explode($delimiter, $input['label']);
     $inputLabelText = $confArea . '->';
     $toTopLink = '<span class="to_top ml-3"><a href="#navigation">to top</a></span>';
 
@@ -183,8 +203,8 @@ function buildInputHTML($confArea, $attrName, $inputData = [], $delimiter = '|')
     //wrap_pre($attrNameStr, '$attrNameStr|file: '.__FUNCTION__.'()|l:'.__LINE__);
     //wrap_pre($attrDataTypeStr, '$attrDataTypeStr|file: '.__FUNCTION__.'()|l:'.__LINE__);
 
-    $defInputValue = (isset($inputData['defaultValue']) && !empty($inputData['defaultValue']))
-        ? ', <a href="#" onclick="return false;" class="badge badge-secondary">' . $inputData['defaultValue'] . '</a> - default value'
+    $defInputValue = (isset($input['defaultValue']) && !empty($input['defaultValue']))
+        ? ', <a href="#" onclick="return false;" class="badge badge-secondary">' . $input['defaultValue'] . '</a> - default value'
         : '';
     $badgeDataTypeClasses = [
         'string' => ' badge-info',
@@ -197,17 +217,17 @@ function buildInputHTML($confArea, $attrName, $inputData = [], $delimiter = '|')
         '<p>
             <a href="#" onclick="return false;" 
             data-toggle="tooltip" data-placement="top" title="Input data type"
-            class="badge ' . $badgeDataTypeClasses[$inputData['inputDataType']] . '">'
-        . $inputData['inputDataType'] .
+            class="badge ' . $badgeDataTypeClasses[$input['inputDataType']] . '">'
+        . $input['inputDataType'] .
         '</a>'
         . $defInputValue . '                       
         </p>';
 
     $inputErrorCont = '';
-    if ($inputData['validation']['error']) {
+    if ($input['validation']['error']) {
         $inputErrorText = '';
-        if (count($inputData['validation']['errorText'])) {
-            foreach ($inputData['validation']['errorText'] as $errorText) {
+        if (count($input['validation']['errorText'])) {
+            foreach ($input['validation']['errorText'] as $errorText) {
                 $inputErrorText .= '<p class="badge badge-danger">'.$errorText.'</p>';
             }
         }
@@ -219,7 +239,7 @@ function buildInputHTML($confArea, $attrName, $inputData = [], $delimiter = '|')
         '<div class="row align-items-start no-gutters">';
     // ------ prepare data for Checkbox column
     $htmlMarkFromLocalConfig = '';
-    if ($inputData['fromLocalConfig']) {
+    if ($input['fromLocalConfig']) {
         $htmlMarkFromLocalConfig .=
             '<p>
                 <a href="#" class="badge badge-success mt-1" 
@@ -228,11 +248,21 @@ function buildInputHTML($confArea, $attrName, $inputData = [], $delimiter = '|')
                 title="Setting from local config file.">Local</a>
             </p>';
     }
-    $isSwitchOn =
+
+    // Дописать!
+    $isSwitchOn = '';
+    if (is_null($input['validation']['post']['value'])) {
+        $isSwitchOn =
         (
-            isset($inputData['meta']['editable'])
-            && $inputData['meta']['editable'] === true
+            isset($input['meta']['editable'])
+            && $input['meta']['editable'] === true
         ) ? ' checked' : '';
+
+    } else {
+        $isSwitchOn = ' checked';
+        $input['val'] = $input['validation']['post']['value'];
+    }
+
     // ------ prepare data for Checkbox column
 
     // ------ Checkbox column
@@ -240,7 +270,7 @@ function buildInputHTML($confArea, $attrName, $inputData = [], $delimiter = '|')
         '<div class="col-md-1 col-sm-1">
             <div class="custom-control custom-switch">
                 <input type="checkbox" ' . $isSwitchOn . ' class="custom-control-input protectiusChbx" 
-                id="chbx_' . $attrIdStr . '" data-input-id="' . $attrIdStr . '" data-input-type="' . $inputData['inputDataType'] . '">
+                id="chbx_' . $attrIdStr . '" data-input-id="' . $attrIdStr . '" data-input-type="' . $input['inputDataType'] . '">
                 <label class="custom-control-label" for="chbx_' . $attrIdStr . '"></label>
             </div>
             ' . $htmlMarkFromLocalConfig . '           
@@ -253,16 +283,16 @@ function buildInputHTML($confArea, $attrName, $inputData = [], $delimiter = '|')
 
     // if is String (numeric or null) Value input
     if (
-        is_string($inputData['val'])
-        || is_numeric($inputData['val'])
-        || is_null($inputData['val'])
+        is_string($input['val'])
+        || is_numeric($input['val'])
+        || is_null($input['val'])
     ) {
         $readonly = (
-            isset($inputData['meta']['editable'])
-            && $inputData['meta']['editable'] === true
+            isset($input['meta']['editable'])
+            && $input['meta']['editable'] === true
         ) ? '' : ' readonly disabled';
 
-        $size = (strlen($inputData['val']) > 12) ? strlen($inputData['val']) + 3 : 12;
+        $size = (strlen($input['val']) > 12) ? strlen($input['val']) + 3 : 12;
 
         $html .=
             '<div class="form-group">';
@@ -273,7 +303,7 @@ function buildInputHTML($confArea, $attrName, $inputData = [], $delimiter = '|')
         $html .=
             '<p>
                 <input type="text" class="form-control ' . $readonly . ' " name="' . $attrNameStr . '" 
-                    value="' . htmlentities($inputData['val']) . '" id="' . $attrIdStr . '" 
+                    value="' . htmlentities($input['val']) . '" id="' . $attrIdStr . '" 
                     size="' . $size . '" ' . $readonly . ' maxlength="400">                    
             </p>';
         $html .=
@@ -281,11 +311,11 @@ function buildInputHTML($confArea, $attrName, $inputData = [], $delimiter = '|')
     }
 
     // if is Boolean input
-    else if (is_bool($inputData['val'])) {
+    else if (is_bool($input['val'])) {
         $disabled =
             (
-                isset($inputData['meta']['editable'])
-                && $inputData['meta']['editable'] === true
+                isset($input['meta']['editable'])
+                && $input['meta']['editable'] === true
             ) ? '' : ' disabled';
 
         $html .=
@@ -294,7 +324,7 @@ function buildInputHTML($confArea, $attrName, $inputData = [], $delimiter = '|')
         $html .= $inputErrorCont;
 
         foreach ([true, false] as $iVal) {
-            $checked = (boolval($inputData['val']) == boolval($iVal)) ? ' checked' : '';
+            $checked = (boolval($input['val']) == boolval($iVal)) ? ' checked' : '';
             $labelBoolTxt = (boolval($iVal)) ? 'true' : 'false';
 
             $html .=

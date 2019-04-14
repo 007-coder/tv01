@@ -63,6 +63,13 @@ class ConfigEditor extends \CustomizableClass
     protected $validationErrors = [];
 
     /**
+     * Contains array with valid POST data, received during POST
+     * validation in $this->validate()
+     * @var array
+     */
+    protected $validatedPost = [];
+
+    /**
      * Class instantiation method
      * @return $this
      */
@@ -228,6 +235,16 @@ class ConfigEditor extends \CustomizableClass
                 );
             } else {
                 $validatedKeys[] = $configKey;
+                $validValue = [
+                    'value' => $value,
+                    'dimensionStop' => true
+                ];
+                $currValid = [];
+                laravelHelpersArrSet($currValid, $configKey, $validValue, $delimiter);
+                $this->validatedPost = array_merge_recursive(
+                    $this->validatedPost,
+                    $currValid
+                );
             }
 
         }
@@ -243,6 +260,7 @@ class ConfigEditor extends \CustomizableClass
         wrap_pre($oneDimPost, '$oneDimPost ');
         wrap_pre($validatedKeys, '$validatedKeys');
         //wrap_pre($this->validationErrors, '$this->validationErrors');
+        //wrap_pre($this->validatedPost, '$this->validatedPost');
 
         return $isValid;
     }
@@ -254,7 +272,7 @@ class ConfigEditor extends \CustomizableClass
      * @param array $dataType
      * @return boolean
      */
-    /*vprotected function alidatePostValue($key, $postValue, $validationRules = [], $dataType = [], $oSubPath = '')
+    /*protected function validatePostValue($key, $postValue, $validationRules = [], $dataType = [], $oSubPath = '')
     {
         $validator = new ConfigValidator;
         $isValid = true;
@@ -357,6 +375,14 @@ class ConfigEditor extends \CustomizableClass
     public function getErrors()
     {
         return $this->validationErrors;
+    }
+
+    /**
+     * @return array
+     */
+    public function getValidatedPost()
+    {
+        return $this->validatedPost;
     }
 
 }

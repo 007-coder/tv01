@@ -126,9 +126,12 @@ if (isset($_POST) && count($_POST)) {
         $configUpdated = $configEditor->updateConfig();
     } else {
         $editorErrors = $configEditor->getErrors();
+        $validatedPost = $configEditor->getValidatedPost();
+        $configCombiner->setEditorValidationErrors($editorErrors);
+        $configCombiner->setValidatedPost($validatedPost);
     }
 
-    $configCombiner->setEditorValidationErrors($editorErrors);
+
 }
 
 if ($configCombiner->validate()) {

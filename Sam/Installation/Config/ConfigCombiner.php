@@ -147,7 +147,8 @@ class ConfigCombiner extends \CustomizableClass
         $configMetaOneDim = MultiDimToOneDimArray($delimiter, $this->configMeta);
 
 
-        $formValidationErrors = $webData['formData']['validationErrors'] = [];
+        $formValidationErrors = $formValidatedPost =
+        $webData['formData']['validationErrors'] = [];
         if (count($this->editorValidationErrors)) {
             $formValidationErrors =
                 readyFormValidationErrors (
@@ -163,6 +164,12 @@ class ConfigCombiner extends \CustomizableClass
                    ];
                 }
             }
+        }
+
+        if (count($this->validatedPost)) {
+            $formValidatedPost =
+                readyFormValidatedPost ($this->validatedPost, $delimiter);
+            wrap_pre($formValidatedPost, '$formValidatedPost in '.__FUNCTION__.' s: '.__LINE__);
         }
 
         $tmpFormData = [];
@@ -222,15 +229,20 @@ class ConfigCombiner extends \CustomizableClass
                     'errorText' =>
                         (isset ($formValidationErrors[$configArea][$attrName]))
                         ? $formValidationErrors[$configArea][$attrName]['messages']
-                        : ''
+                        : '',
+                    'post' => [
+                        'isValid' =>
+                            isset($formValidatedPost[$configArea][$attrName])
+                            ? true : null,
+                        'value' =>
+                            (isset($formValidatedPost[$configArea][$attrName]))
+                            ? $formValidatedPost[$configArea][$attrName]['value']
+                            : null
+                    ],
+
                 ];
             }
         }
-
-
-        wrap_pre($formValidationErrors, '$formValidationErrors in '
-            .__FUNCTION__);
-        
         
         $webData['formData']['form'] = $tmpFormData;
 

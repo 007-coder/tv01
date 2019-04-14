@@ -137,7 +137,7 @@
                                 <?php //Config Area statistics end ?>
 
                                 <?php //Main data start ?>
-                                <?php $delimiter = '.'/*'|'*/; ?>
+                                <?php $delimiter = '.'; ?>
                                 <div class="input-group mb-3">
                                     <?php if (empty($configAreaData)) { ?>
                                         <h2 class="text-center">no config
