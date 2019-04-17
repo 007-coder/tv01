@@ -166,57 +166,116 @@ class ConfigEditor extends \CustomizableClass
         $countErrors = 0;
         foreach ($oneDimPost as $configKey => $value) {
             $dataType = $oneDimMeta[$configKey]['dataType'];
-            //$validations = $oneDimMeta[$configKey]['validate'];
+            $validations = $oneDimMeta[$configKey]['validate'];
 
-            $errorMessages = [];
-            $isCurrValid = true;
-
-            switch ($dataType) {
-                case ConfigValidator::T_BOOL:
-                    if ($validator->isBoolean($value)) {
+            //  ------ Prepare additional validation rules start --------
+            $validationRulesForAdd =
+                isset($validations['validationRules'])
+                ? $validations['validationRules']
+                : '';
+            if (!empty($validationRulesForAdd)) {
+                $tmpValidations = [];
+                foreach (explode('|', $validationRulesForAdd) as $methodName) {
+                    if (strpos($methodName, ':') !== false) {
+                        $explRule = explode(':', $methodName);
+                        $arguments = [];
+                        if (!empty($explRule[1])) {
+                            foreach (explode(',', $explRule[1]) as $args) {
+                                $explArgs = explode('=', $args);
+                                $arguments[$explArgs[0]] = $explArgs[1];
+                            }
+                        }
+                        $tmpValidations[$explRule[0]] = $arguments;
 
                     } else {
-                        $isCurrValid = false;
-                        $errorMessages[] = $validator->getErrorMessage($dataType);
+                        $tmpValidations[$methodName] = [];
+                    }
+                }
+
+                $validationRulesForAdd = $tmpValidations;
+            }
+            //  ------ Prepare additional validation rules end --------
+
+
+            $errorMessages = [];
+            $isCurrValidDataType = true;
+            $isCurrValidAllAddValidators = true;
+
+            // ------- Data type validation start ---------
+            switch ($dataType) {
+                case ConfigValidator::T_BOOL:
+                    if (!$validator->isBoolean($value)) {
+                        $isCurrValidDataType = false;
                     }
                     break;
 
                 case ConfigValidator::T_INTEGER:
-                    if ($validator->isInteger($value)) {
-
-                    } else {
-                        $isCurrValid = false;
-                        $errorMessages[] = $validator->getErrorMessage($dataType);
+                    if (!$validator->isInteger($value)) {
+                        $isCurrValidDataType = false;
                     }
                     break;
 
                 case ConfigValidator::T_DOUBLE:
-                    if ($validator->isDouble($value)) {
-
-                    } else {
-                        $isCurrValid = false;
-                        $errorMessages[] = $validator->getErrorMessage($dataType);
+                    if (!$validator->isDouble($value)) {
+                        $isCurrValidDataType = false;
                     }
                     break;
 
                 case ConfigValidator::T_STRING:
-                    if ($validator->isString($value)) {
-
-                    } else {
-                        $isCurrValid = false;
-                       $errorMessages[] = $validator->getErrorMessage($dataType);
+                    if (!$validator->isString($value)) {
+                        $isCurrValidDataType = false;
                     }
                     break;
 
                 case ConfigValidator::T_NULL:
-                    if ($validator->isNULL($value)) {
-
-                    } else {
-                        $isCurrValid = false;
-                        $errorMessages[] = $validator->getErrorMessage($dataType);
+                    if (!$validator->isNULL($value)) {
+                        $isCurrValidDataType = false;
                     }
                     break;
             }
+
+            if ($isCurrValidDataType === false) {
+                $errorMessages[] = $validator->getErrorMessage($dataType);
+            }
+            // ------- Data type validation end ---------
+
+
+            // ------- Additional validations start ---------
+            if (!empty($validationRulesForAdd) && count($validationRulesForAdd)) {
+                $validCurrAddRules = [];
+
+                foreach ($validationRulesForAdd as $methodName => $arguments) {
+
+                    if (method_exists($validator, $methodName)) {
+                        if (is_array($arguments) && count($arguments)) {
+                            $validationPassed = $validator->$methodName($arguments);
+                        } else {
+                            $validationPassed = $validator->$methodName();
+                        }
+                        if ($validationPassed) {
+                            $validCurrAddRules[] = $methodName;
+                        } else {
+                           $errorMessages[] = $validator->getErrorMessage($methodName, 'custom');
+                        }
+                    } else {
+                        $errorMessages[] = 'Validation method "<u>'.$methodName.'</u>" does not exists!';
+                    }
+
+                }
+
+                if (count($validCurrAddRules) != count($validationRulesForAdd)) {
+                    $isCurrValidAllAddValidators = false;
+                } else {
+                    $isCurrValidAllAddValidators = true;
+                }
+            }
+            // ------- Additional validations end ---------
+
+
+            // if validation for dataType and for additional validations
+            // has been passed
+            $isCurrValid = ($isCurrValidDataType && $isCurrValidAllAddValidators)
+                ? true : false;
 
             // if get validation error
             if ($isCurrValid === false) {
@@ -235,7 +294,10 @@ class ConfigEditor extends \CustomizableClass
                     $this->validationErrors,
                     $currError
                 );
-            } else {
+            }
+
+            // if validation passed
+            else {
                 $validatedKeys[] = $configKey;
                 $validValue = [
                     'value' => $value,

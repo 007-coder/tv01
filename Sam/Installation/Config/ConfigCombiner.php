@@ -26,6 +26,9 @@ class ConfigCombiner extends \CustomizableClass
      * @var array
      */
     protected $validConfigNames = ['core', 'core2'];
+    /**
+     * @var array
+     */
     protected $validateErrorCodes = [];
 
     /**
@@ -41,8 +44,19 @@ class ConfigCombiner extends \CustomizableClass
      */
     protected $validatedPost = [];
 
+    /**
+     * @var array
+     */
     protected $configMeta = [];
+
+    /**
+     * @var array
+     */
     protected $globalConfig = [];
+
+    /**
+     * @var array
+     */
     protected $localConfig = [];
 
     const PATH_CONFIG = BASE_DIR . DS . '_configuration';
@@ -162,7 +176,7 @@ class ConfigCombiner extends \CustomizableClass
                    $webData['formData']['validationErrors'][] = [
                        'title' => $areaError.'->'
                            .str_replace($delimiter, "->", $subAreaError),
-                       'hash' => '#option-'.$areaError.'-'.$subAreaError
+                       'urlHash' => '#option-'.$areaError.'-'.$subAreaError
                    ];
                 }
             }
@@ -177,7 +191,7 @@ class ConfigCombiner extends \CustomizableClass
                    $webData['formData']['validationValid'][] = [
                        'title' => $areaFVP.'->'
                            .str_replace($delimiter, "->", $subAreaFVP),
-                       'hash' => '#option-'.$areaFVP.'-'.$subAreaFVP
+                       'urlHash' => '#option-'.$areaFVP.'-'.$subAreaFVP
                    ];
                 }
             }

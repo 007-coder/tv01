@@ -79,7 +79,7 @@
                                             values:</p>
                                         <?php foreach ($tmplData['formData']['validationErrors'] as $validationError) { ?>
                                             <p class="mb-1">
-                                                <a href="<?php echo $validationError['hash']?>" class="badge badge-danger">
+                                                <a href="<?php echo $validationError['urlHash']?>" class="badge badge-danger">
                                                     <?php echo $validationError['title']?>
                                                 </a>
                                             </p>
@@ -92,7 +92,7 @@
                                         if (count($tmplData['formData']['validationValid'])) {
                                             foreach ($tmplData['formData']['validationValid'] as $validationValid) { ?>
                                                 <p class="mb-1">
-                                                    <a href="<?php echo $validationValid['hash']?>" class="badge badge-success">
+                                                    <a href="<?php echo $validationValid['urlHash']?>" class="badge badge-success">
                                                         <?php echo $validationValid['title']?>
                                                     </a>
                                                 </p>

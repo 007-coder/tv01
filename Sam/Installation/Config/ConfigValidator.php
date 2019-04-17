@@ -40,7 +40,7 @@ class ConfigValidator
             'unknown type' => 'Unknown data type.',
         ],
         'custom' => [
-            'funcName' => '',
+            'methodName' => 'message',
         ]
     ];
 
@@ -55,6 +55,16 @@ class ConfigValidator
         return (isset($this->errorMessages[$type][$key]))
             ? $this->errorMessages[$type][$key]
             : '';
+    }
+
+    /**
+     * @param $message
+     * @param $key
+     * @param string $type
+     */
+    protected function setErrorMessage($message, $key, $type = 'dataType')
+    {
+        $this->errorMessages[$type][$key] = $message;
     }
 
     /**
@@ -177,5 +187,38 @@ class ConfigValidator
             return false;
         }
     }
+
+
+    // test methods
+    public function validate1($options = []) {
+        $isValid = false;
+
+        if (!$isValid) {
+            $this->setErrorMessage(
+                'Validate1 error',
+                __FUNCTION__,
+                'custom'
+            );
+        }
+
+        return $isValid;
+    }
+
+
+    public function validate2() {
+        $isValid = false;
+
+        if (!$isValid) {
+            $this->setErrorMessage(
+                'Validate2 error',
+                __FUNCTION__,
+                'custom'
+            );
+        }
+
+        return $isValid;
+    }
+
+    // ---------------------
 
 }

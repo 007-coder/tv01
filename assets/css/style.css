@@ -42,6 +42,10 @@ form[name="appConfigForm"] .list-group-item .localConfig {
 form[name="appConfigForm"] .list-group-item .validationError {
   background: #f8d7da;
 }
+form[name="appConfigForm"] .list-group-item .validationError .inputError > p {
+    display: block;
+    margin-bottom: 4px;
+}
 form[name="appConfigForm"] .list-group-item .validationValid {
   background: #C7F8B3;
 }
