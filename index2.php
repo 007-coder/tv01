@@ -24,69 +24,11 @@ use Sam\Installation\Config\ConfigCombiner;
 use Sam\Installation\Config\ConfigEditor;
 use Sam\Installation\Config\ConfigFormRenderer;
 
-/*class Foo {
-
-    private $sourceArray = [
-        'key0' => 'value0',
-        'key1' => [
-            'key11' => [
-                'key111' => 123,
-                'key112' => 'value112',
-            ],
-            'key12' => [
-                'key121' => 'value121',
-                'key122' => 'value122',
-            ]
-        ],
-        'key2' => [
-            'key21' => 'value21',
-        ],
-        'key3' => 'value3',
-    ];
-
-    private $resultArray;
-
-    public function __construct()
-    {
-        $this->resultArray = $this->validateArray($this->sourceArray);
-    }
-
-    private function validateArray($mixed)
-    {
-        $resultArray = [];
-        if (is_array($mixed)) {
-            foreach ($mixed as $key => $value) {
-                $result = $this->validateArray($value);
-                if (is_bool($result)) {
-                    $resultArray[$key] = [$value, $result];
-                } else {
-                    $resultArray[$key] = $result;
-                }
-            }
-        } else {
-            return $this->validateValue($mixed);
-        }
-
-        return $resultArray;
-    }
-
-    private function validateValue($value)
-    {
-        return is_string($value);
-    }
-
-    public function getResultArray()
-    {
-        return $this->resultArray;
-    }
-}*/
-
-/*$foo = new Foo();
-wrap_pre($foo->getResultArray(), '$foo->getResultArray()');*/
 
 $editorErrors = [];
 $configUpdated = false;
 $configName = '';
+$validConfigNames = ['core', 'megaCore', 'intelInside'];
 
 // Setting up current config name
 if (isset($_POST) && count($_POST)) {
@@ -98,28 +40,16 @@ if (isset($_POST) && count($_POST)) {
     $configName = 'core';
 }
 
-// processing POST
-/*if (isset($_POST) && count($_POST)) {
-  $configEditor = ConfigEditor::getInstance();
-  $configEditor->setConfigName($configName);
-  $configEditor->setPostData($_POST);
-
-  if ($configEditor->validate()){
-    $configUpdated = $configEditor->updateConfig();
-  } else {
-      $editorErrors = $configEditor->getErrors();
-
-      wrap_pre($editorErrors, '$editorErrors in '.__FILE__);
-  }
-}*/
 
 $configCombiner = ConfigCombiner::getInstance();
 $configCombiner->setConfigName($configName);
+$configCombiner->setValidConfigNames($validConfigNames);
 
 // processing POST
 if (isset($_POST) && count($_POST)) {
     $configEditor = ConfigEditor::getInstance();
-    $configEditor->setConfigName($configName);
+    $configEditor->setConfigName($configCombiner->getConfigName());
+    $configEditor->setValidConfigNames($configCombiner->getValidConfigNames());
     $configEditor->setPostData($_POST);
 
     if ($configEditor->validate()) {
@@ -134,7 +64,7 @@ if (isset($_POST) && count($_POST)) {
 
 if ($configCombiner->validate()) {
     $data = $configCombiner->buildWebData();
-    $data['configName'] = $configName;
+    $data['configName'] = $configCombiner->getConfigName();
     $data['page'] = 'configForm';
 } else {
     $data['page'] = 'error';

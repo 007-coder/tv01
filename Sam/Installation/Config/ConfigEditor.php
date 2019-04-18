@@ -1,6 +1,6 @@
 <?php
-namespace Sam\Installation\Config;
 
+namespace Sam\Installation\Config;
 
 /**
  * Class ConfigEditor
@@ -63,11 +63,17 @@ class ConfigEditor extends \CustomizableClass
     protected $validationErrors = [];
 
     /**
-     * Contains array with valid POST data, received during POST
+     * Contains array with valid POST data, received after POST
      * validation in $this->validate()
      * @var array
      */
     protected $validatedPost = [];
+
+    /**
+     * Filtered and ready for publish POST, used in $this->updateConfig()
+     * @var array
+     */
+    protected $readyForPublishPost = [];
 
     /**
      * Class instantiation method
@@ -119,7 +125,7 @@ class ConfigEditor extends \CustomizableClass
      * @param $namesArr
      * @return void
      */
-    public function setValidConfigNames($namesArr)
+    public function setValidConfigNames(array $namesArr)
     {
         if (is_array($namesArr)) {
             if (count($namesArr)) {
@@ -140,7 +146,8 @@ class ConfigEditor extends \CustomizableClass
      */
     public function setPostData($postData)
     {
-        $this->postData = (is_array($postData) && count($postData)) ? $postData : [];
+        $this->postData = (is_array($postData) && count($postData)) ? $postData
+            : [];
     }
 
     /**
@@ -154,6 +161,7 @@ class ConfigEditor extends \CustomizableClass
             unset($this->postData['configName']);
             $this->setPostData($this->postData);
         }
+
         $isValid = false;
 
         $validator = new ConfigValidator;
@@ -168,11 +176,12 @@ class ConfigEditor extends \CustomizableClass
             $dataType = $oneDimMeta[$configKey]['dataType'];
             $validations = $oneDimMeta[$configKey]['validate'];
 
+
             //  ------ Prepare additional validation rules start --------
             $validationRulesForAdd =
                 isset($validations['validationRules'])
-                ? $validations['validationRules']
-                : '';
+                    ? $validations['validationRules']
+                    : '';
             if (!empty($validationRulesForAdd)) {
                 $tmpValidations = [];
                 foreach (explode('|', $validationRulesForAdd) as $methodName) {
@@ -186,7 +195,6 @@ class ConfigEditor extends \CustomizableClass
                             }
                         }
                         $tmpValidations[$explRule[0]] = $arguments;
-
                     } else {
                         $tmpValidations[$methodName] = [];
                     }
@@ -245,7 +253,6 @@ class ConfigEditor extends \CustomizableClass
                 $validCurrAddRules = [];
 
                 foreach ($validationRulesForAdd as $methodName => $arguments) {
-
                     if (method_exists($validator, $methodName)) {
                         if (is_array($arguments) && count($arguments)) {
                             $validationPassed = $validator->$methodName($arguments);
@@ -255,12 +262,11 @@ class ConfigEditor extends \CustomizableClass
                         if ($validationPassed) {
                             $validCurrAddRules[] = $methodName;
                         } else {
-                           $errorMessages[] = $validator->getErrorMessage($methodName, 'custom');
+                            $errorMessages[] = $validator->getErrorMessage($methodName, 'custom');
                         }
                     } else {
-                        $errorMessages[] = 'Validation method "<u>'.$methodName.'</u>" does not exists!';
+                        $errorMessages[] = 'Validation method "<u>' . $methodName . '</u>" does not exists!';
                     }
-
                 }
 
                 if (count($validCurrAddRules) != count($validationRulesForAdd)) {
@@ -283,7 +289,7 @@ class ConfigEditor extends \CustomizableClass
                 $errorValue = [
                     'inputId' => $configKey,
                     'messages' => $errorMessages,
-                    'dimensionStop' => true
+                    'dimensionStop' => true,
                 ];
                 $currError = [];
                 laravelHelpersArrSet(
@@ -295,13 +301,12 @@ class ConfigEditor extends \CustomizableClass
                     $currError
                 );
             }
-
             // if validation passed
             else {
-                $validatedKeys[] = $configKey;
+                $validatedKeys[$configKey] = $value;
                 $validValue = [
                     'value' => $value,
-                    'dimensionStop' => true
+                    'dimensionStop' => true,
                 ];
                 $currValid = [];
                 laravelHelpersArrSet(
@@ -312,7 +317,6 @@ class ConfigEditor extends \CustomizableClass
                     $currValid
                 );
             }
-
         }
 
         if (count($this->validationErrors)) {
@@ -320,13 +324,52 @@ class ConfigEditor extends \CustomizableClass
         }
 
         if (count($validatedKeys) == count($oneDimPost)) {
-           $isValid = true;
+            $isValid = true;
+
+            // ------- setting up $this->readyForPublishPost values -------
+            foreach ($validatedKeys as $configArea => $value) {
+                $valueDataType = $oneDimMeta[$configArea]['dataType'];
+                switch ($valueDataType) {
+                    case ConfigValidator::T_NULL:
+                        if (empty($value)) {
+                            $value = null;
+                        }
+                        break;
+
+                    case ConfigValidator::T_INTEGER:
+                        $value = (int)$value;
+                        break;
+
+                    case ConfigValidator::T_DOUBLE:
+                        $value = (double)$value;
+                        break;
+
+                    case ConfigValidator::T_BOOL:
+                        $value = (in_array(
+                            $value,
+                            ['1', 'true', true, 1, 'yes', 'on'],
+                            true)
+                        ) ? true : false;
+                        break;
+                }
+
+                $this->readyForPublishPost[$configArea] = $value;
+
+                /*$currReadyPost = [];
+                laravelHelpersArrSet(
+                    $currReadyPost, $configArea, $value, $delimiter
+                );
+                $this->readyForPublishPost = array_merge_recursive(
+                    $this->readyForPublishPost,
+                    $currReadyPost
+                );*/
+            }
+            // --------------------
         }
 
-        wrap_pre($oneDimPost, '$oneDimPost in '.__METHOD__.' L: '.__LINE__);
-        wrap_pre($validatedKeys, '$validatedKeys in '.__METHOD__.' L: '.__LINE__);
+        //wrap_pre($oneDimPost, '$oneDimPost in ' . __METHOD__ . ' L: ' . __LINE__);
+        //wrap_pre($validatedKeys, '$validatedKeys in ' . __METHOD__ . ' L: ' . __LINE__);
         //wrap_pre($this->validationErrors, '$this->validationErrors');
-        //wrap_pre($this->validatedPost, '$this->validatedPost');
 
         return $isValid;
     }
@@ -405,19 +448,6 @@ class ConfigEditor extends \CustomizableClass
         }
     }*/
 
-    /**
-     * Lead $data to needed data type
-     * @param string $data
-     * @param string $toType
-     * @return string
-     */
-    /*protected function leadToType($data = '', $toType = '')
-    {
-        $leadedData = '';
-
-        return $leadedData;
-    }*/
-
 
 
     /**
@@ -427,8 +457,69 @@ class ConfigEditor extends \CustomizableClass
      */
     public function updateConfig()
     {
-        return false;
+        $updated = false;
+        $delimiter = '.';
 
+        if (count($this->readyForPublishPost)) {
+            $oneDimGlobalConfig = laravelHelpersArrDot($this->globalConfig);
+
+            $readyForPublish = $excludeFromPublish = [];
+            foreach ($this->readyForPublishPost as $configKey => $value) {
+                // if POST and Global config values are different
+                if (
+                    isset($oneDimGlobalConfig[$configKey])
+                    && gettype($oneDimGlobalConfig[$configKey]) == gettype($value)
+                    && $oneDimGlobalConfig[$configKey] != $value
+                ) {
+                    // putting them to $readyForPublish array
+                    $readyForPublish[$configKey] = $value;
+                }
+                // if POST and Global config values are same
+                elseif (
+                    isset($oneDimGlobalConfig[$configKey])
+                    && gettype($oneDimGlobalConfig[$configKey]) == gettype($value)
+                    && $oneDimGlobalConfig[$configKey] == $value
+                ) {
+                    // putting them to $excludeFromPublish array
+                    $excludeFromPublish[$configKey] = $value;
+                }
+            }
+
+            $publish = [];
+            if (count($readyForPublish)) {
+
+                // build multidimensional $publish array
+                foreach ($readyForPublish as $configKey => $value) {
+                    $currPublish = [];
+                    laravelHelpersArrSet(
+                        $currPublish, $configKey, $value, $delimiter
+                    );
+                    $publish = array_merge_recursive($publish, $currPublish);
+                }
+
+                // --- publish ready POST to local config file
+                if (
+                    file_put_contents(
+                        self::PATH_CONFIG.DS.$this->configName.'.local.php',
+                        '<?php return ' . var_export($publish, true) . ';'
+                    ) !== false) {
+
+                    $updated = true;
+                }
+                // ---------------
+
+
+            } else {
+                $updated = true;
+            }
+
+            /*wrap_pre(laravelHelpersArrDot($publish), 'laravelHelpersArrDot($publish) in ' . __FUNCTION__);
+            wrap_pre($excludeFromPublish, '$excludeFromPublish in ' . __FUNCTION__);
+            wrap_pre($this->readyForPublishPost, '$this->readyForPublishPost in ' . __FUNCTION__);*/
+
+        }
+
+        return $updated;
     }
 
     /**

@@ -2,9 +2,14 @@
   'account' => 
   array (
     'pageHideWithoutAuction' => false,
+    'thumbnailSize' => 7,
   ),
   'admin' => 
   array (
+    'dashboard' => 
+    array (
+      'closedAuctions' => 12,
+    ),
     'inventory' => 
     array (
       'fieldConfig' => 
@@ -31,7 +36,7 @@
   ),
   'bidding' => 
   array (
-    'highBidWarningMultiplier' => '20',
+    'highBidWarningMultiplier' => 20,
   ),
   'captcha' => 
   array (

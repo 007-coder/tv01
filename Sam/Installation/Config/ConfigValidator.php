@@ -58,16 +58,6 @@ class ConfigValidator
     }
 
     /**
-     * @param $message
-     * @param $key
-     * @param string $type
-     */
-    protected function setErrorMessage($message, $key, $type = 'dataType')
-    {
-        $this->errorMessages[$type][$key] = $message;
-    }
-
-    /**
      * Validation: is value a "boolean" type
      * @param $value
      * @return bool
@@ -189,16 +179,15 @@ class ConfigValidator
     }
 
 
+
+
+
     // test methods
     public function validate1($options = []) {
         $isValid = false;
 
         if (!$isValid) {
-            $this->setErrorMessage(
-                'Validate1 error',
-                __FUNCTION__,
-                'custom'
-            );
+            $this->errorMessages['custom'][__FUNCTION__] = 'Validate1 error';
         }
 
         return $isValid;
@@ -209,11 +198,7 @@ class ConfigValidator
         $isValid = false;
 
         if (!$isValid) {
-            $this->setErrorMessage(
-                'Validate2 error',
-                __FUNCTION__,
-                'custom'
-            );
+            $this->errorMessages['custom'][__FUNCTION__] = 'Validate2 error';
         }
 
         return $isValid;

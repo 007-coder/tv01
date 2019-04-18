@@ -224,7 +224,10 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
         $inputErrorText = '';
         if (count($input['validation']['errorText'])) {
             foreach ($input['validation']['errorText'] as $errorText) {
-                $inputErrorText .= '<p class="badge badge-danger">'.$errorText.'</p>';
+                $inputErrorText .=
+                    '<div class="errorTextWrap">
+                        <p class="badge badge-danger">'.$errorText.'</p>
+                    </div>';
             }
         }
         $inputErrorCont =
@@ -250,8 +253,8 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
     if (is_null($input['validation']['post']['value'])) {
         $isSwitchOn =
         (
-            isset($input['meta']['editable'])
-            && $input['meta']['editable'] === true
+            (isset($input['meta']['editable']) && $input['meta']['editable'] === true )
+            || $input['fromLocalConfig']
         ) ? ' checked' : '';
 
     } else {
@@ -287,8 +290,8 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
     ) {
         if (is_null($input['validation']['post']['value'])) {
             $readonly = (
-                isset($input['meta']['editable'])
-                && $input['meta']['editable'] === true
+                ( isset($input['meta']['editable']) && $input['meta']['editable'] === true )
+                || $input['fromLocalConfig']
             ) ? '' : ' readonly disabled';
         } else {
             $readonly = '';
@@ -321,8 +324,8 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
         if (is_null($input['validation']['post']['value'])) {
             $disabled =
             (
-                isset($input['meta']['editable'])
-                && $input['meta']['editable'] === true
+                ( isset($input['meta']['editable']) && $input['meta']['editable'] === true )
+                || $input['fromLocalConfig']
             ) ? '' : ' disabled';
         } else {
             $disabled = '';

@@ -20,8 +20,8 @@ return [
             'inputDataType' => ConfigValidator::T_BOOL,
             'validate' => [
                 'required' => true,
-                'validationRules' =>
-                    'validate1:const=5,const2=dgdgdg|validate2|validate3',
+                'validationRules' =>''
+                    /*'validate1:const=5,const2=dgdgdg|validate2|validate3'*/,
             ],
         ],
         'thumbnailSize' => [
@@ -37,7 +37,7 @@ return [
             'closedAuctions' => [
                 'editable' => true,
                 'validate' => [
-                    'validationRules' => 'isTest',
+                    'validationRules' => '',
                 ],
             ],
         ],
@@ -68,7 +68,8 @@ return [
                 'ItemNumber' => [
                     'requirable' => [
                         'validate' => [
-                            'validationRules' => 'isTest454',
+                            'validationRules' => '',
+
                         ],
                     ],
                 ],

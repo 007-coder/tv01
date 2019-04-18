@@ -26,6 +26,7 @@ class ConfigCombiner extends \CustomizableClass
      * @var array
      */
     protected $validConfigNames = ['core', 'core2'];
+
     /**
      * @var array
      */
@@ -86,6 +87,26 @@ class ConfigCombiner extends \CustomizableClass
 
         $this->configName = $configName;
     }
+
+
+    /**
+     * @return string
+     */
+    public function getConfigName()
+    {
+        return $this->configName;
+    }
+
+    public function setValidConfigNames(array $validNames)
+    {
+        $this->validConfigNames = empty($validNames) ? $validNames : [];
+    }
+
+    public function getValidConfigNames()
+    {
+        return $this->validConfigNames;
+    }
+
 
     /**
      * store ConfigEditor::validationErrors for using in this->buildWebData()
@@ -195,8 +216,6 @@ class ConfigCombiner extends \CustomizableClass
                    ];
                 }
             }
-
-            wrap_pre($formValidatedPost, '$formValidatedPost in '.__FUNCTION__.' s: '.__LINE__);
         }
 
         $tmpFormData = [];

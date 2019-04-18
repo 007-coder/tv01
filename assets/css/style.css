@@ -1,51 +1,62 @@
 .list-group-item {
-  padding: 0.35rem 1.7rem;
+    padding: 0.35rem 1.7rem;
 }
+
 form[name="appConfigForm"] .list-group {
-  width: 100%;
+    width: 100%;
 }
+
 form[name="appConfigForm"] .list-group.data {
-  border: none;
-  border-bottom: 1px solid rgba(0,0,0,.035);
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, .035);
 }
+
 form[name="appConfigForm"] p {
-  margin-bottom: 7px;
+    margin-bottom: 7px;
 }
+
 form[name="appConfigForm"] {
-  position: relative;
-  width: 100%;
-  padding-bottom: 50px;
+    position: relative;
+    width: 100%;
+    padding-bottom: 50px;
 }
+
 form[name="appConfigForm"] .configGroupeTitle .to_top {
-  font-size: 60%;
-} 
-form[name="appConfigForm"] .configGroupeTitle .countGroupeItems {
-  font-size: 75%;
+    font-size: 60%;
 }
+
+form[name="appConfigForm"] .configGroupeTitle .countGroupeItems {
+    font-size: 75%;
+}
+
 form[name="appConfigForm"] .form-control {
-  width: auto;
+    width: auto;
 }
 
 form[name="appConfigForm"] .submitWrap {
-  position: fixed;
-  bottom: 0;  
+    position: fixed;
+    bottom: 0;
 }
+
 form[name="appConfigForm"] button[type="submit"] {
-  padding-left: 50px; 
-  padding-right: 50px; 
-} 
+    padding-left: 50px;
+    padding-right: 50px;
+
+}
 
 form[name="appConfigForm"] .list-group-item .localConfig {
-  background: #F0E1FB;
+    background: #F0E1FB;
 }
 
 form[name="appConfigForm"] .list-group-item .validationError {
-  background: #f8d7da;
+    background: #f8d7da;
 }
+
 form[name="appConfigForm"] .list-group-item .validationError .inputError > p {
     display: block;
     margin-bottom: 4px;
 }
+
 form[name="appConfigForm"] .list-group-item .validationValid {
-  background: #C7F8B3;
+    background: #C7F8B3;
 }

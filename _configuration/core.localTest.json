@@ -1,0 +1,11 @@
+{
+    "account.pageHideWithoutAuction": false,
+    "admin.inventory.fieldConfig.ItemNumber.requirable": false,
+    "admin.inventory.fieldConfig.Category.title": "Category89",
+    "admin.inventory.fieldConfig.Category.requirable": false,
+    "admin.inventory.fieldConfig.Warranty.requirable": false,
+    "admin.inventory.fieldConfig.Estimates.requirable": false,
+    "bidding.highBidWarningMultiplier": 20,
+    "captcha.secretText": true,
+    "db.readonly.enabled": true
+}
