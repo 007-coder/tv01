@@ -226,16 +226,14 @@ class ConfigCombiner extends \CustomizableClass
             }
         }
 
-        $tmpFormData = [];
+        $tmpFormData = $webData['formData']['localConfigSettings'] = [];
         foreach ($webData['formData']['form'] as $configArea => $configAreaData) {
-
             foreach ($configAreaData as $attrName => $inputData) {
-                $tmpFormData[$configArea][$attrName] = $inputData;
 
+                $tmpFormData[$configArea][$attrName] = $inputData;
                 $tmpFormData[$configArea][$attrName]['fromLocalConfig'] =
                     (isset($localConfigOneDim[$configArea . $delimiter . $attrName]))
                         ? true : false;
-
 
                 // --- setting up data type for input
                 if (isset($configMetaOneDim[$configArea . $delimiter .
@@ -249,33 +247,32 @@ class ConfigCombiner extends \CustomizableClass
                 // -----------------------
 
 
+                // -- setting up list of all local config values
+                // for Config form view
+                if ($tmpFormData[$configArea][$attrName]['fromLocalConfig']) {
+                    $webData['formData']['localConfigSettings'][] = [
+                        'title' => $configArea.'->'
+                           .str_replace($delimiter, "->", $attrName),
+                        'urlHash' => '#option-'.$configArea.'-'.$attrName,
+                        'data' => [
+                            'type' => $dataType,
+                            'value' => setInputValue($inputData['val'], $dataType)
+                        ],
+                    ];
+                }
+                // ------------------
+
+
                 //------setting up default value for input
                 if ($tmpFormData[$configArea][$attrName]['fromLocalConfig']) {
                     $defaultValue = '';
                     if (isset($globalConfigOneDim[$configArea . $delimiter . $attrName])) {
-                        switch ($dataType) {
-                            case ConfigValidator::T_BOOL:
-                                $defaultValue =
-                                    ($globalConfigOneDim[$configArea . $delimiter . $attrName])
-                                        ? 'true' : 'false';
-                                break;
-                            case ConfigValidator::T_NULL:
-                                $defaultValue =
-                                    (is_null($globalConfigOneDim[$configArea . $delimiter . $attrName]))
-                                        ? 'NULL'
-                                        : $globalConfigOneDim[$configArea . $delimiter . $attrName];
-                                break;
-                            case ConfigValidator::T_INTEGER:
-                                $defaultValue =
-                                    $globalConfigOneDim[$configArea . $delimiter . $attrName];
-                                break;
-                            case ConfigValidator::T_STRING:
-                                $defaultValue =
-                                    $globalConfigOneDim[$configArea . $delimiter . $attrName];
-                                break;
-                        }
+                        $defaultValue =
+                            setInputValue(
+                                $globalConfigOneDim[$configArea . $delimiter . $attrName],
+                                $dataType
+                            );
                     }
-
                     $tmpFormData[$configArea][$attrName]['defaultValue'] = $defaultValue;
                 }
                 // --------------------
@@ -305,6 +302,7 @@ class ConfigCombiner extends \CustomizableClass
         }
         
         $webData['formData']['form'] = $tmpFormData;
+
 
         return $webData;
     }

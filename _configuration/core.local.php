@@ -1,6 +1,7 @@
 <?php return array (
   'account' => 
   array (
+    'page' => true,
     'pageExcludeMainAccount' => false,
     'pageHideWithoutAuction' => false,
     'thumbnailSize' => 9,
@@ -10,6 +11,13 @@
     'dashboard' => 
     array (
       'closedAuctions' => 12,
+    ),
+    'auction' => 
+    array (
+      'lastBids' => 
+      array (
+        'refreshTimeout' => 32,
+      ),
     ),
     'inventory' => 
     array (

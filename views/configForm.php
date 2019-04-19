@@ -38,6 +38,34 @@
                     <?php } ?>
                 </ul>
 
+
+                <?php
+                // Display list of Local config options
+                if (count($tmplData['formData']['localConfigSettings'])) { ?>
+                    <div class="localValuesWrap mb-3">
+                        <h4 class="mt-3 mb-2">Local config values
+                            (<?php echo count($tmplData['formData']['localConfigSettings']) ?>)
+                        </h4>
+
+                        <?php foreach ($tmplData['formData']['localConfigSettings'] as $localConfigValue) {
+                            ?>
+                            <p class="mb-0">
+                                <a href="<?php echo $localConfigValue['urlHash'] ?>"
+                                   class="badge badge-info localConfig-badge">
+                                    <?php echo $localConfigValue['title'] ?>
+                                </a>,
+                                <span class="badge badge-success ml-2">
+                                    <?php echo $localConfigValue['data']['value'] ?>
+                                </span>,
+                                <span class="badge badge-light ml-2">
+                                    <?php echo $localConfigValue['data']['type'] ?>
+                                </span>
+                            </p>
+                        <?php } ?>
+                    </div>
+                <?php } ?>
+
+
                 <?php
                 // Display render errors
                 if (isset($tmplData['renderErrors']) && count($tmplData['renderErrors'])) {
@@ -75,30 +103,35 @@
 
                                 <?php if (count($tmplData['formData']['validationErrors'])) { ?>
                                     <div class="validationErrorsWrap">
-                                        <p class="mb-2">You made mistakes for the following
+                                        <p class="mb-2">You made mistakes for
+                                            the following
                                             values:</p>
                                         <?php foreach ($tmplData['formData']['validationErrors'] as $validationError) { ?>
                                             <p class="mb-1">
-                                                <a href="<?php echo $validationError['urlHash']?>" class="badge badge-danger">
-                                                    <?php echo $validationError['title']?>
+                                                <a href="<?php echo $validationError['urlHash'] ?>"
+                                                   class="badge badge-danger">
+                                                    <?php echo $validationError['title'] ?>
                                                 </a>
                                             </p>
                                         <?php } ?>
                                     </div>
 
                                     <div class="validationValidWrap mt-3">
-                                        <p class="mb-2">The following values are valid: </p>
+                                        <p class="mb-2">The following values are
+                                            valid: </p>
                                         <?php
                                         if (count($tmplData['formData']['validationValid'])) {
                                             foreach ($tmplData['formData']['validationValid'] as $validationValid) { ?>
                                                 <p class="mb-1">
-                                                    <a href="<?php echo $validationValid['urlHash']?>" class="badge badge-success">
-                                                        <?php echo $validationValid['title']?>
+                                                    <a href="<?php echo $validationValid['urlHash'] ?>"
+                                                       class="badge badge-success">
+                                                        <?php echo $validationValid['title'] ?>
                                                     </a>
                                                 </p>
                                             <?php } ?>
                                         <?php } else { ?>
-                                            <h5 class="mb-2 text-center"><b>No valid values!</b></h5>
+                                            <h5 class="mb-2 text-center"><b>No
+                                                    valid values!</b></h5>
                                         <?php } ?>
                                     </div>
                                 <?php } ?>
@@ -113,7 +146,8 @@
                 <?php } ?>
 
 
-                <form action="<?php echo $tmplData['formActionUrl'] ?>" name="appConfigForm" method="post">
+                <form action="<?php echo $tmplData['formActionUrl'] ?>"
+                      name="appConfigForm" method="post">
 
                     <ul class="list-group list-group-flush">
                         <?php foreach ($tmplData['formData']['form'] as $configArea => $configAreaData) {
@@ -137,15 +171,36 @@
                                 <?php //Config groupe title end ?>
 
                                 <?php //Config Area statistics ?>
-                                <div class="statistics row">
+                                <div class="statistics row mb-lg-4 ">
                                     <?php
                                     if (isset($tmplData['formData']['statistics'][$configArea])) {
-                                        foreach ($tmplData['formData']['statistics'][$configArea] as $key => $value) { ?>
-                                            <p class="col-sm-2 col-md-2">
-                                                <?php foreach ($value as $k2 => $val2) {
-                                                    echo $k2 . ': ' . $val2 . '<br>';
-                                                } ?>
-                                            </p>
+                                        foreach ($tmplData['formData']['statistics'][$configArea] as $key => $value) {
+                                            $statFirstVal = $statSecondVal = $statTitle = '';
+                                            switch ($key) {
+                                                case "visability":
+                                                    $statTitle = 'Visibility';
+                                                    $statFirstVal = $value['visible'];
+                                                    $statSecondVal = $value['hidden'];
+                                                    $statCollClass = 'col-sm-2 col-md-2';
+                                                    break;
+                                                case "allowForEdit":
+                                                    $statTitle = 'Allowed for edit';
+                                                    $statFirstVal = $value['allowed'];
+                                                    $statSecondVal = $value['disabled'];
+                                                    $statCollClass = 'col-sm-4 col-md-4';
+                                                break;
+                                            }
+                                        ?>
+                                            <div class="<?php echo $statCollClass ?>">
+                                                <h5 class="d-lg-inline-block mr-2"><?php echo $statTitle.': ' ?></h5>
+                                                <span class="badge badge-success">
+                                                    <?php echo $statFirstVal?>
+                                                </span> /
+                                                <span class="badge badge-secondary">
+                                                    <?php echo $statSecondVal?>
+                                                </span>
+
+                                            </div>
                                         <?php }
                                     } ?>
                                 </div>
@@ -168,7 +223,7 @@
                                                 $validClass = isset($input['validation']['post']['value'])
                                                     ? ' validationValid' : '';
                                                 ?>
-                                                <li class="list-group-item <?php echo $classLocalConfig.$errorClass.$validClass ?>">
+                                                <li class="list-group-item <?php echo $classLocalConfig . $errorClass . $validClass ?>">
                                                     <a name="<?php echo 'option-' . $configArea . '-' . $attrName; ?>"></a>
                                                     <?php echo buildInputHTML($configArea, $attrName, $input, $delimiter); ?>
                                                 </li>

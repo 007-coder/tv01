@@ -1,9 +1,11 @@
-.list-group-item {
-    padding: 0.35rem 1.7rem;
-}
+
 
 form[name="appConfigForm"] .list-group {
     width: 100%;
+}
+
+form[name="appConfigForm"] > .list-group > .list-group-item  {
+    padding: 0.35rem 0;
 }
 
 form[name="appConfigForm"] .list-group.data {
@@ -45,7 +47,7 @@ form[name="appConfigForm"] button[type="submit"] {
 }
 
 form[name="appConfigForm"] .list-group-item .localConfig {
-    background: #F0E1FB;
+    background: #C5E9EF;
 }
 
 form[name="appConfigForm"] .list-group-item .validationError {

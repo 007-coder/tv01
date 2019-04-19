@@ -1,7 +1,12 @@
 <?php
+
+use Sam\Installation\Config\ConfigValidator;
+
+
 function wrap_pre($data, $title = '')
 {
-    $countData = (is_array($data) || is_object($data)) ? ' (' . count($data) . ') ' : '';
+    $countData = (is_array($data) || is_object($data))
+        ? ' (' . count($data) . ') ' : '';
     $readyTitle = $title;
     /*if (!empty(__FUNCTION__)) {
         $readyTitle .= ' | func: '.__FUNCTION__;
@@ -11,17 +16,19 @@ function wrap_pre($data, $title = '')
     echo '<pre><h4>' . $readyTitle . $countData . ' </h4>' . print_r($data, true) . '</pre>';
 }
 
-function prepareInput($in, $meta = [], $delimiter = '|', $out = [], $prefix =
-'')
-{
+function prepareInput(
+    $in, $meta = [], $delimiter = '|', $out = [], $prefix =
+''
+) {
 
     foreach ($in as $key => $value) {
-        $currMeta = (isset($meta[$key]) && count($meta[$key])) ? $meta[$key] : [];
+        $currMeta = (isset($meta[$key]) && count($meta[$key])) ? $meta[$key]
+            : [];
 
         if (is_array($value)) {
             $out = array_merge($out, prepareInput(
-                $value, $currMeta, $delimiter, $out,
-                $prefix . $key . $delimiter)
+                    $value, $currMeta, $delimiter, $out,
+                    $prefix . $key . $delimiter)
             );
         } else {
             $out["{$prefix}{$key}"] = [
@@ -35,14 +42,16 @@ function prepareInput($in, $meta = [], $delimiter = '|', $out = [], $prefix =
     return $out;
 }
 
-function MultiDimToOneDimArray($kSepar = '|', $in, $excludeKeys = [], $out = [], $prefix = '')
-{
+function MultiDimToOneDimArray(
+    $kSepar = '|', $in, $excludeKeys = [], $out = [], $prefix = ''
+) {
     foreach ($in as $key => $value) {
         if (!in_array($key, $excludeKeys)) {
             if (is_array($value)) {
                 if (isset($value['dimensionStop']) && $value['dimensionStop']) {
                     unset($value['dimensionStop']);
-                    $out["{$prefix}{$key}"] = isset($value[0]) ? $value[0] : $value;
+                    $out["{$prefix}{$key}"] = isset($value[0]) ? $value[0]
+                        : $value;
                 } else {
                     $out = array_merge($out, MultiDimToOneDimArray($kSepar, $value, $excludeKeys, $out, $prefix . $key . $kSepar));
                 }
@@ -162,7 +171,6 @@ function readyFormValidatedPost($post, $delimiter = '|')
     return $readyPost;
 }
 
-
 /**
  * @param $confArea
  * @param $attrName
@@ -194,10 +202,10 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
         $d = ($k + 1 == count($explInputLabel)) ? '' : '->';
         $inputLabelText .=
             ($k + 1 == count($explInputLabel) || $k + 1 == count($explInputLabel) - 1)
-            ? '<b>' . $value . '</b>' . $d
-            : $value . $d;
+                ? '<b>' . $value . '</b>' . $d
+                : $value . $d;
     }
-    $inputLabelText = $inputLabelText.$toTopLink;
+    $inputLabelText = $inputLabelText . $toTopLink;
 
     $defInputValue = (isset($input['defaultValue']) && !empty($input['defaultValue']))
         ? ', <a href="#" onclick="return false;" class="badge badge-secondary">' . $input['defaultValue'] . '</a> - default value'
@@ -226,12 +234,12 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
             foreach ($input['validation']['errorText'] as $errorText) {
                 $inputErrorText .=
                     '<div class="errorTextWrap">
-                        <p class="badge badge-danger">'.$errorText.'</p>
+                        <p class="badge badge-danger">' . $errorText . '</p>
                     </div>';
             }
         }
         $inputErrorCont =
-            '<div class="inputError">'. $inputErrorText .'</div>';
+            '<div class="inputError">' . $inputErrorText . '</div>';
     }
 
     $html .=
@@ -252,16 +260,13 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
     // of input or radio buttons
     if (is_null($input['validation']['post']['value'])) {
         $isSwitchOn =
-        (
-            (isset($input['meta']['editable']) && $input['meta']['editable'] === true )
-            || $input['fromLocalConfig']
-        ) ? ' checked' : '';
-
+            (
+                (isset($input['meta']['editable']) && $input['meta']['editable'] === true)
+                || $input['fromLocalConfig']
+            ) ? ' checked' : '';
     } else {
         $isSwitchOn = ' checked';
     }
-
-
 
     // ------ prepare data for Checkbox column
 
@@ -281,7 +286,6 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
     $html .=
         '<div class="col-sm-11 col-md-11">';
 
-
     // if is String (numeric or null) Value input
     if (
         is_string($input['val'])
@@ -290,15 +294,13 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
     ) {
         if (is_null($input['validation']['post']['value'])) {
             $readonly = (
-                ( isset($input['meta']['editable']) && $input['meta']['editable'] === true )
+                (isset($input['meta']['editable']) && $input['meta']['editable'] === true)
                 || $input['fromLocalConfig']
             ) ? '' : ' readonly disabled';
         } else {
             $readonly = '';
             $input['val'] = $input['validation']['post']['value'];
         }
-
-
 
         $size = (strlen($input['val']) > 12) ? strlen($input['val']) + 3 : 12;
 
@@ -316,17 +318,15 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
             </p>';
         $html .=
             '</div>';
-    }
-
-    // if is Boolean input
+    } // if is Boolean input
     else if (is_bool($input['val'])) {
 
         if (is_null($input['validation']['post']['value'])) {
             $disabled =
-            (
-                ( isset($input['meta']['editable']) && $input['meta']['editable'] === true )
-                || $input['fromLocalConfig']
-            ) ? '' : ' disabled';
+                (
+                    (isset($input['meta']['editable']) && $input['meta']['editable'] === true)
+                    || $input['fromLocalConfig']
+                ) ? '' : ' disabled';
         } else {
             $disabled = '';
             $postValue = $input['validation']['post']['value'];
@@ -340,14 +340,14 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
             }
         }
 
-
         $html .=
             '<p>' . $inputLabelText . '</p>';
         $html .= $inputInfoCont;
         $html .= $inputErrorCont;
 
         foreach ([true, false] as $iVal) {
-            $checked = (boolval($input['val']) == boolval($iVal)) ? ' checked' : '';
+            $checked = (boolval($input['val']) == boolval($iVal)) ? ' checked'
+                : '';
             $labelBoolTxt = (boolval($iVal)) ? 'true' : 'false';
 
             $html .=
@@ -359,7 +359,6 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
             $html .=
                 '</div>';
         }
-
     }
 
     $html .=
@@ -399,7 +398,8 @@ function buildConfigDataTypes($globalConfig, $configMeta = [], $out = [])
 {
 
     foreach ($globalConfig as $key => $value) {
-        $currMeta = (isset($configMeta[$key]) && count($configMeta[$key])) ? $configMeta[$key] : [];
+        $currMeta = (isset($configMeta[$key]) && count($configMeta[$key]))
+            ? $configMeta[$key] : [];
 
         if (is_array($value)) {
             $out[$key] = buildConfigDataTypes($value, $currMeta);
@@ -420,7 +420,8 @@ function getValidationRules($in, $meta = [], $oneDimension = false, $out = [])
 {
 
     foreach ($in as $key => $value) {
-        $currMetaValidation = (isset($meta[$key]) && count($meta[$key])) ? $meta[$key] : [];
+        $currMetaValidation = (isset($meta[$key]) && count($meta[$key]))
+            ? $meta[$key] : [];
 
         if (is_array($value)) {
             $out[$key] = getValidationRules($value, $currMetaValidation, $oneDimension);
@@ -449,7 +450,8 @@ function buildConfigMetaFull($in, $meta = [], $oneDimension = false, $out = [])
 {
 
     foreach ($in as $key => $value) {
-        $currMeta = (isset($meta[$key]) && count($meta[$key])) ? $meta[$key] : [];
+        $currMeta = (isset($meta[$key]) && count($meta[$key])) ? $meta[$key]
+            : [];
 
         if (is_array($value)) {
             $out[$key] = buildConfigMetaFull($value, $currMeta, $oneDimension);
@@ -543,7 +545,6 @@ function laravelHelpersArrDot($array, $delimiter = '.', $prepend = '')
     return $results;
 }
 
-
 function buildValidationError($inputId, $strDelim = '->', $value = [])
 {
     $result = [];
@@ -554,4 +555,22 @@ function buildValidationError($inputId, $strDelim = '->', $value = [])
     $temp = $value;
 
     return $result;
+}
+
+function setInputValue($value, $dataType)
+{
+    switch ($dataType) {
+        case ConfigValidator::T_BOOL:
+            return ($value) ? 'true' : 'false';
+
+        case ConfigValidator::T_NULL:
+            return is_null($value) ? 'NULL' : $value;
+
+        case ConfigValidator::T_INTEGER:
+            return (!empty($value) && is_numeric($value)) ? (int)$value : 'error: not a Numeric';
+
+        case ConfigValidator::T_STRING:
+            return (!empty($value) && is_string($value)) ? $value : 'error: not a String';
+
+    }
 }
