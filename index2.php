@@ -45,11 +45,14 @@ $configCombiner = ConfigCombiner::getInstance();
 $configCombiner->setConfigName($configName);
 $configCombiner->setValidConfigNames($validConfigNames);
 
+$workConfigName = $configCombiner->getConfigName();
+$validWorkConfigNames = $configCombiner->getValidConfigNames();
+
 // processing POST
 if (isset($_POST) && count($_POST)) {
     $configEditor = ConfigEditor::getInstance();
-    $configEditor->setConfigName($configCombiner->getConfigName());
-    $configEditor->setValidConfigNames($configCombiner->getValidConfigNames());
+    $configEditor->setConfigName($workConfigName);
+    $configEditor->setValidConfigNames($validWorkConfigNames);
     $configEditor->setPostData($_POST);
 
     if ($configEditor->validate()) {
@@ -64,7 +67,7 @@ if (isset($_POST) && count($_POST)) {
 
 if ($configCombiner->validate()) {
     $data = $configCombiner->buildWebData();
-    $data['configName'] = $configCombiner->getConfigName();
+    $data['configName'] = $workConfigName;
     $data['page'] = 'configForm';
 } else {
     $data['page'] = 'error';
