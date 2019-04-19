@@ -97,11 +97,20 @@ class ConfigCombiner extends \CustomizableClass
         return $this->configName;
     }
 
+    /**
+     * Setting valid config names
+     * @param array $validNames
+     */
     public function setValidConfigNames(array $validNames)
     {
         $this->validConfigNames = empty($validNames) ? $validNames : [];
     }
 
+
+    /**
+     * Get valid config names
+     * @return array
+     */
     public function getValidConfigNames()
     {
         return $this->validConfigNames;
@@ -181,7 +190,6 @@ class ConfigCombiner extends \CustomizableClass
         $globalConfigOneDim = MultiDimToOneDimArray($delimiter, $this->globalConfig);
         $configMetaOneDim = MultiDimToOneDimArray($delimiter, $this->configMeta);
 
-
         $formValidationErrors =
         $formValidatedPost = $webData['formData']['validationErrors'] = [];
 
@@ -223,11 +231,13 @@ class ConfigCombiner extends \CustomizableClass
 
             foreach ($configAreaData as $attrName => $inputData) {
                 $tmpFormData[$configArea][$attrName] = $inputData;
+
                 $tmpFormData[$configArea][$attrName]['fromLocalConfig'] =
                     (isset($localConfigOneDim[$configArea . $delimiter . $attrName]))
                         ? true : false;
 
-                //setting up data type for input
+
+                // --- setting up data type for input
                 if (isset($configMetaOneDim[$configArea . $delimiter .
                     $attrName . $delimiter. 'inputDataType'])) {
                     $dataType = $configMetaOneDim[$configArea . $delimiter .
@@ -235,10 +245,11 @@ class ConfigCombiner extends \CustomizableClass
                 } else {
                     $dataType = gettype($globalConfigOneDim[$configArea . $delimiter . $attrName]);
                 }
-
                 $tmpFormData[$configArea][$attrName]['inputDataType'] = $dataType;
+                // -----------------------
 
-                //setting up default value for input
+
+                //------setting up default value for input
                 if ($tmpFormData[$configArea][$attrName]['fromLocalConfig']) {
                     $defaultValue = '';
                     if (isset($globalConfigOneDim[$configArea . $delimiter . $attrName])) {
@@ -267,7 +278,9 @@ class ConfigCombiner extends \CustomizableClass
 
                     $tmpFormData[$configArea][$attrName]['defaultValue'] = $defaultValue;
                 }
+                // --------------------
 
+                // --- Setting up validation check array for Input
                 $tmpFormData[$configArea][$attrName]['validation'] = [
                     'error' =>
                         (isset ($formValidationErrors[$configArea][$attrName]))
@@ -285,8 +298,9 @@ class ConfigCombiner extends \CustomizableClass
                             ? $formValidatedPost[$configArea][$attrName]['value']
                             : null
                     ],
-
                 ];
+                // -----------------------
+
             }
         }
         
