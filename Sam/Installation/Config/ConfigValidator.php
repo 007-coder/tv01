@@ -181,7 +181,6 @@ class ConfigValidator
 
 
 
-
     // test methods
     public function validate1($options = []) {
         $isValid = false;
@@ -192,18 +191,6 @@ class ConfigValidator
 
         return $isValid;
     }
-
-
-    public function validate2() {
-        $isValid = false;
-
-        if (!$isValid) {
-            $this->errorMessages['custom'][__FUNCTION__] = 'Validate2 error';
-        }
-
-        return $isValid;
-    }
-
     // ---------------------
 
 }
