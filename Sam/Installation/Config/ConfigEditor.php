@@ -176,7 +176,6 @@ class ConfigEditor extends \CustomizableClass
             $dataType = $oneDimMeta[$configKey]['dataType'];
             $validations = $oneDimMeta[$configKey]['validate'];
 
-
             //  ------ Prepare additional validation rules start --------
             $validationRulesForAdd =
                 isset($validations['validationRules'])
@@ -203,7 +202,6 @@ class ConfigEditor extends \CustomizableClass
                 $validationRulesForAdd = $tmpValidations;
             }
             //  ------ Prepare additional validation rules end --------
-
 
             $errorMessages = [];
             $isCurrValidDataType = true;
@@ -247,7 +245,6 @@ class ConfigEditor extends \CustomizableClass
             }
             // ------- Data type validation end ---------
 
-
             // ------- Additional validations start ---------
             if (!empty($validationRulesForAdd) && count($validationRulesForAdd)) {
                 $validCurrAddRules = [];
@@ -277,7 +274,6 @@ class ConfigEditor extends \CustomizableClass
             }
             // ------- Additional validations end ---------
 
-
             // if validation for dataType and for additional validations
             // has been passed
             $isCurrValid = ($isCurrValidDataType && $isCurrValidAllAddValidators)
@@ -300,8 +296,7 @@ class ConfigEditor extends \CustomizableClass
                     $this->validationErrors,
                     $currError
                 );
-            }
-            // if validation passed
+            } // if validation passed
             else {
                 $validatedKeys[$configKey] = $value;
                 $validValue = [
@@ -329,40 +324,9 @@ class ConfigEditor extends \CustomizableClass
             // ------- setting up $this->readyForPublishPost values -------
             foreach ($validatedKeys as $configArea => $value) {
                 $valueDataType = $oneDimMeta[$configArea]['dataType'];
-                switch ($valueDataType) {
-                    case ConfigValidator::T_NULL:
-                        if (empty($value)) {
-                            $value = null;
-                        }
-                        break;
-
-                    case ConfigValidator::T_INTEGER:
-                        $value = (int)$value;
-                        break;
-
-                    case ConfigValidator::T_DOUBLE:
-                        $value = (double)$value;
-                        break;
-
-                    case ConfigValidator::T_BOOL:
-                        $value = (in_array(
-                            $value,
-                            ['1', 'true', true, 1, 'yes', 'on'],
-                            true)
-                        ) ? true : false;
-                        break;
-                }
+                $value = $this->leadToTypeAndFilter($value, $valueDataType);
 
                 $this->readyForPublishPost[$configArea] = $value;
-
-                /*$currReadyPost = [];
-                laravelHelpersArrSet(
-                    $currReadyPost, $configArea, $value, $delimiter
-                );
-                $this->readyForPublishPost = array_merge_recursive(
-                    $this->readyForPublishPost,
-                    $currReadyPost
-                );*/
             }
             // --------------------
         }
@@ -372,6 +336,42 @@ class ConfigEditor extends \CustomizableClass
         //wrap_pre($this->validationErrors, '$this->validationErrors');
 
         return $isValid;
+    }
+
+    /**
+     * @param $value
+     * @param $type
+     * @return bool|float|int|null
+     */
+    protected function leadToTypeAndFilter($value, $type)
+    {
+        $validTypes = [
+            'boolean', 'integer', 'double',
+            'string', 'array', 'object', 'NULL',
+        ];
+
+        if (in_array($type, $validTypes)) {
+            switch ($type) {
+                case 'NULL':
+                    if (empty($value)) {
+                        return null;
+                    }
+                case 'integer':
+                    return (int)$value;
+
+                case 'double':
+                    return (float)$value;
+
+                case 'boolean':
+                    $value = (in_array(
+                        $value,
+                        ['1', 'true', true, 1, 'yes', 'on'],
+                        true)
+                    ) ? true : false;
+
+                    return $value;
+            }
+        }
     }
 
     /**
@@ -448,8 +448,6 @@ class ConfigEditor extends \CustomizableClass
         }
     }*/
 
-
-
     /**
      * Update content of local config file for current config name.
      * $this->configName.'local.php'
@@ -473,8 +471,7 @@ class ConfigEditor extends \CustomizableClass
                 ) {
                     // putting them to $readyForPublish array
                     $readyForPublish[$configKey] = $value;
-                }
-                // if POST and Global config values are same
+                } // if POST and Global config values are same
                 elseif (
                     isset($oneDimGlobalConfig[$configKey])
                     && gettype($oneDimGlobalConfig[$configKey]) == gettype($value)
@@ -500,7 +497,7 @@ class ConfigEditor extends \CustomizableClass
                 // --- publish ready POST to local config file
                 if (
                     file_put_contents(
-                        self::PATH_CONFIG.DS.$this->configName.'.local.php',
+                        self::PATH_CONFIG . DS . $this->configName . '.local.php',
                         '<?php return ' . var_export($publish, true) . ';'
                     ) !== false) {
 
@@ -508,15 +505,12 @@ class ConfigEditor extends \CustomizableClass
                 }
                 // ---------------
 
-
             } else {
                 $updated = true;
             }
-
             /*wrap_pre(laravelHelpersArrDot($publish), 'laravelHelpersArrDot($publish) in ' . __FUNCTION__);
             wrap_pre($excludeFromPublish, '$excludeFromPublish in ' . __FUNCTION__);
             wrap_pre($this->readyForPublishPost, '$this->readyForPublishPost in ' . __FUNCTION__);*/
-
         }
 
         return $updated;

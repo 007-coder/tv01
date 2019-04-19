@@ -1,8 +1,9 @@
 <?php return array (
   'account' => 
   array (
+    'pageExcludeMainAccount' => false,
     'pageHideWithoutAuction' => false,
-    'thumbnailSize' => 7,
+    'thumbnailSize' => 9,
   ),
   'admin' => 
   array (
@@ -20,7 +21,6 @@
         ),
         'Category' => 
         array (
-          'title' => 'Category89',
           'requirable' => false,
         ),
         'Warranty' => 
