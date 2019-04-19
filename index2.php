@@ -34,8 +34,8 @@ $validConfigNames = ['core', 'megaCore', 'intelInside'];
 if (isset($_POST) && count($_POST)) {
     $configName = (isset($_POST['configName']) && is_string($_POST['configName']))
         ? $_POST['configName'] : 'core';
-} else if (isset($_GET['name']) && is_string($_GET['name'])) {
-    $configName = $_GET['name'];
+} else if (isset($_GET['file']) && is_string($_GET['file'])) {
+    $configName = $_GET['file'];
 } else {
     $configName = 'core';
 }
