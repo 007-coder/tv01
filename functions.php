@@ -8,11 +8,6 @@ function wrap_pre($data, $title = '')
     $countData = (is_array($data) || is_object($data))
         ? ' (' . count($data) . ') ' : '';
     $readyTitle = $title;
-    /*if (!empty(__FUNCTION__)) {
-        $readyTitle .= ' | func: '.__FUNCTION__;
-    } else if (!empty(__METHOD__)) {
-        $readyTitle .= ' | method: '.__METHOD__;
-    }*/
     echo '<pre><h4>' . $readyTitle . $countData . ' </h4>' . print_r($data, true) . '</pre>';
 }
 

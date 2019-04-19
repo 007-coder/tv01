@@ -15,6 +15,8 @@ if (!defined('DS')) {
 class ConfigCombiner extends \CustomizableClass
 {
 
+    const PATH_CONFIG = BASE_DIR . DS . '_configuration';
+
     /**
      * Current config name
      * @var string
@@ -60,7 +62,6 @@ class ConfigCombiner extends \CustomizableClass
      */
     protected $localConfig = [];
 
-    const PATH_CONFIG = BASE_DIR . DS . '_configuration';
 
     /**
      * Class instantiation method
@@ -247,9 +248,8 @@ class ConfigCombiner extends \CustomizableClass
                 // -----------------------
 
 
-                // -- setting up list of all local config values
-                // for Config form view
                 if ($tmpFormData[$configArea][$attrName]['fromLocalConfig']) {
+                    // setting up list of all local config values for Config form view
                     $webData['formData']['localConfigSettings'][] = [
                         'title' => $configArea.'->'
                            .str_replace($delimiter, "->", $attrName),
@@ -259,12 +259,9 @@ class ConfigCombiner extends \CustomizableClass
                             'value' => setInputValue($inputData['val'], $dataType)
                         ],
                     ];
-                }
-                // ------------------
+                     // ------------------
 
-
-                //------setting up default value for input
-                if ($tmpFormData[$configArea][$attrName]['fromLocalConfig']) {
+                    // setting up default value for input
                     $defaultValue = '';
                     if (isset($globalConfigOneDim[$configArea . $delimiter . $attrName])) {
                         $defaultValue =
@@ -274,8 +271,9 @@ class ConfigCombiner extends \CustomizableClass
                             );
                     }
                     $tmpFormData[$configArea][$attrName]['defaultValue'] = $defaultValue;
+                    // --------------------
                 }
-                // --------------------
+
 
                 // --- Setting up validation check array for Input
                 $tmpFormData[$configArea][$attrName]['validation'] = [
