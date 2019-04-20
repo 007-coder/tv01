@@ -4,19 +4,12 @@
  * email: vakulenkoyura211@gmail.com
  */
 
-return array (
-  'account' =>
-  array (
-    'pageHideWithoutAuction' => false,
-  ),
-  'admin' =>
-  array (
-    'auction' =>
-    array (
-      'lots' =>
-      array (
-        'syncTimeout' => 62,
-      ),
-    ),
-  ),
-);
+return [
+    'account' =>
+        [
+            'page' => true,
+            'pageExcludeMainAccount' => false,
+            'pageHideWithoutAuction' => false,
+            'thumbnailSize' => 56,
+        ],
+];

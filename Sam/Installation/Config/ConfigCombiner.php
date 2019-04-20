@@ -240,7 +240,7 @@ class ConfigCombiner extends \CustomizableClass
                 }
 
                 $this->validateErrorCodes['UseDefaultsConfig'] =
-                'For Local config well be used defaults config values from 
+                'For Local config will be used defaults config values from 
                 file "' . $this->configName . '.local.defaults.php"  in "'
                 . $pathLocalConfigDefaults . '" ';
 
