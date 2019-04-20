@@ -51,6 +51,19 @@ class ConfigEditor extends \CustomizableClass
     protected $postData = [];
 
     /**
+     * POST Task action for doing something with data in Local config file
+     * (for example: delete data from local config)
+     * @var string
+     */
+    protected $taskAction = '';
+
+    /**
+     * Valid Task Actions
+     * @var array
+     */
+    protected $validTaskActions = ['delete'];
+
+    /**
      * Contains data ready for update local config from POST request
      * @var array
      */
@@ -158,6 +171,20 @@ class ConfigEditor extends \CustomizableClass
     {
         $this->postData = (is_array($postData) && count($postData)) ? $postData
             : [];
+    }
+
+    /**
+     * set task action
+     * @param string $action
+     * @return bool
+     */
+    public function setTaskAction($action = '')
+    {
+        if (in_array($action, $this->validTaskActions)) {
+            $this->taskAction = $action;
+        } else {
+            return false;
+        }
     }
 
     /**
