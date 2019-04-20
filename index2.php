@@ -42,28 +42,31 @@ if (isset($_POST) && count($_POST)) {
 
 
 $configCombiner = ConfigCombiner::getInstance();
-$configCombiner->setConfigName($configName);
 $configCombiner->setValidConfigNames($validConfigNames);
+$configCombiner->setConfigName($configName);
 
 $workConfigName = $configCombiner->getConfigName();
-$validWorkConfigNames = $configCombiner->getValidConfigNames();
+
+
 
 // processing POST
-if (isset($_POST) && count($_POST)) {
+if (isset($_POST) && count($_POST) && !is_null($workConfigName)) {
     $configEditor = ConfigEditor::getInstance();
-    $configEditor->setConfigName($workConfigName);
-    $configEditor->setValidConfigNames($validWorkConfigNames);
-    $configEditor->setPostData($_POST);
+    $configEditor->setValidConfigNames($configCombiner->getValidConfigNames());
 
-    if ($configEditor->validate()) {
-        $configUpdated = $configEditor->updateConfig();
-    } else {
-        $editorErrors = $configEditor->getErrors();
-        $validatedPost = $configEditor->getValidatedPost();
-        $configCombiner->setEditorValidationErrors($editorErrors);
-        $configCombiner->setValidatedPost($validatedPost);
+    if ($configEditor->setConfigName($workConfigName)) {
+        $configEditor->setPostData($_POST);
+        if ($configEditor->validate()) {
+            $configUpdated = $configEditor->updateConfig();
+        } else {
+            $editorErrors = $configEditor->getErrors();
+            $validatedPost = $configEditor->getValidatedPost();
+            $configCombiner->setEditorValidationErrors($editorErrors);
+            $configCombiner->setValidatedPost($validatedPost);
+        }
     }
 }
+
 
 if ($configCombiner->validate()) {
     $data = $configCombiner->buildWebData();
@@ -74,7 +77,7 @@ if ($configCombiner->validate()) {
 }
 $data['renderErrors'] = $configCombiner->getErrors();
 
-if (isset($_POST) && count($_POST)) {
+if (isset($_POST) && count($_POST) && !is_null($workConfigName)) {
     $data['configUpdated'] = $configUpdated;
 }
 

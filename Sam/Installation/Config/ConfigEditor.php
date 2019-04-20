@@ -88,27 +88,37 @@ class ConfigEditor extends \CustomizableClass
     /**
      * Setting up config name, config meta and loading global config
      * @param string: $configName
-     * @return void
+     * @return boolean
      */
     public function setConfigName($configName)
     {
         $configName = (
             is_string($configName)
             && in_array($configName, $this->validConfigNames)
-        ) ? $configName : 'core';
+        ) ? $configName : null;
 
-        $this->configName = $configName;
+        if (!empty($configName)) {
+            $this->configName = $configName;
 
-        $fileGlobalConfig = self::PATH_CONFIG . DS . $this->configName . '.php';
-        if (file_exists($fileGlobalConfig)) {
-            $this->globalConfig = require $fileGlobalConfig;
+            $fileGlobalConfig = self::PATH_CONFIG . DS . $this->configName . '.php';
+            if (file_exists($fileGlobalConfig)) {
+                $this->globalConfig = require $fileGlobalConfig;
+
+                $fileConfigMeta = self::PATH_CONFIG . DS . $this->configName . '.meta.php';
+                if (file_exists($fileConfigMeta)) {
+                    $configMeta = require $fileConfigMeta;
+                    $this->configMetaFull = buildConfigMetaFull($this->globalConfig, $configMeta, true);
+                }
+
+                return true;
+            } else {
+                return false;
+            }
+
+        } else {
+            return false;
         }
 
-        $fileConfigMeta = self::PATH_CONFIG . DS . $this->configName . '.meta.php';
-        if (file_exists($fileConfigMeta)) {
-            $configMeta = require $fileConfigMeta;
-            $this->configMetaFull = buildConfigMetaFull($this->globalConfig, $configMeta, true);
-        }
     }
 
     /**
@@ -157,6 +167,7 @@ class ConfigEditor extends \CustomizableClass
      */
     public function validate()
     {
+
         if (isset($this->postData['configName'])) {
             unset($this->postData['configName']);
             $this->setPostData($this->postData);

@@ -55,7 +55,8 @@ class ConfigFormRenderer extends \CustomizableClass
             }
             $urlPath = implode('/', $explPath);
         }
-        $tmplData['assetsUrl'] = $parseBaseUrl['scheme'] . '://' . $parseBaseUrl['host'] . $urlPath . '/assets/';
+        $tmplData['baseUrl'] = $parseBaseUrl['scheme'] . '://' . $parseBaseUrl['host'];
+        $tmplData['assetsUrl'] = $tmplData['baseUrl'] . $urlPath . '/assets/';
 
         require_once(self::VIEWS_PATH . DS . $tmplData['page'] . '.php');
     }

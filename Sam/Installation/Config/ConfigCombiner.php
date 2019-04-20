@@ -2,7 +2,6 @@
 
 namespace Sam\Installation\Config;
 
-
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
 }
@@ -27,7 +26,7 @@ class ConfigCombiner extends \CustomizableClass
      * Array with List of all valid config names
      * @var array
      */
-    protected $validConfigNames = ['core', 'core2'];
+    protected $validConfigNames = [];
 
     /**
      * @var array
@@ -62,7 +61,6 @@ class ConfigCombiner extends \CustomizableClass
      */
     protected $localConfig = [];
 
-
     /**
      * Class instantiation method
      * @return $this
@@ -71,6 +69,15 @@ class ConfigCombiner extends \CustomizableClass
     {
         $instance = parent::_getInstance(__CLASS__);
         return $instance;
+    }
+
+    /**
+     * Setting valid config names
+     * @param array $validNames
+     */
+    public function setValidConfigNames(array $validNames)
+    {
+        $this->validConfigNames = empty($validNames) ? [] : $validNames;
     }
 
     /**
@@ -84,11 +91,10 @@ class ConfigCombiner extends \CustomizableClass
         $configName = (
             is_string($configName)
             && in_array($configName, $this->validConfigNames)
-        ) ? $configName : 'core';
+        ) ? $configName : null;
 
         $this->configName = $configName;
     }
-
 
     /**
      * @return string
@@ -99,16 +105,6 @@ class ConfigCombiner extends \CustomizableClass
     }
 
     /**
-     * Setting valid config names
-     * @param array $validNames
-     */
-    public function setValidConfigNames(array $validNames)
-    {
-        $this->validConfigNames = empty($validNames) ? $validNames : [];
-    }
-
-
-    /**
      * Get valid config names
      * @return array
      */
@@ -116,7 +112,6 @@ class ConfigCombiner extends \CustomizableClass
     {
         return $this->validConfigNames;
     }
-
 
     /**
      * store ConfigEditor::validationErrors for using in this->buildWebData()
@@ -135,7 +130,7 @@ class ConfigCombiner extends \CustomizableClass
      */
     public function setValidatedPost($data = [])
     {
-       if (is_array($data) && count($data)) {
+        if (is_array($data) && count($data)) {
             $this->validatedPost = $data;
         }
     }
@@ -151,10 +146,142 @@ class ConfigCombiner extends \CustomizableClass
     public function validate()
     {
         $this->getGlobalConfig();
-        $this->getLocalConfig();
-        $this->getConfigMeta();
 
-        return (count($this->globalConfig)) ? true : false;
+        if (empty($this->validateErrorCodes)) {
+            $this->getLocalConfig();
+            $this->getConfigMeta();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * return global config array for current config name ($this->configName)
+     *
+     * @return void
+     * @author
+     **/
+    protected function getGlobalConfig()
+    {
+        if (!empty($this->configName)) {
+            $fileGlobalConfig = self::PATH_CONFIG . DS . $this->configName . '.php';
+
+            if (file_exists($fileGlobalConfig)) {
+                $globalConfig = require($fileGlobalConfig);
+
+                if (is_array($globalConfig)) {
+                    if (count($globalConfig)) {
+                        // Global config is ok.
+                        $this->globalConfig = $globalConfig;
+                    } else {
+                        $this->validateErrorCodes['unvalidGlobalConfig'] =
+                            'Global config file empty!';
+                    }
+                } else {
+                    $this->validateErrorCodes['unvalidGlobalConfig'] =
+                        'Global config file not an array()! Please provide array() for Global config.';
+                }
+            } else {
+                $this->validateErrorCodes['noGlobalConfig'] =
+                    'Global config file "' . $this->configName . '.php"  not found in "' . $fileGlobalConfig . '" ';
+            }
+        } else {
+            $validConfigNames = implode(', ', $this->validConfigNames);
+            $this->validateErrorCodes['isNullGlobalConfig'] =
+                'Global config file not defined, because it not exist in valid 
+                config names <b>' . $validConfigNames . '</b>';
+        }
+    }
+
+    /**
+     * return local config array for current config name ($this->configName)
+     *
+     * @return void
+     * @author
+     **/
+    protected function getLocalConfig()
+    {
+        $pathLocalConfig = self::PATH_CONFIG . DS . $this->configName . '.local.php';
+        $pathLocalConfigDefaults = self::PATH_CONFIG . DS . $this->configName . '.local.defaults.php';
+
+        if (file_exists($pathLocalConfig)) {
+            $localConfig = require($pathLocalConfig);
+
+            if (is_array($localConfig)) {
+                if (count($localConfig)) {
+                    // Local config is ok.
+                    $this->localConfig = $localConfig;
+                } else {
+                    $this->validateErrorCodes['unvalidLocalConfig'] =
+                        'Local config file empty!';
+                }
+            } else {
+                $this->validateErrorCodes['unvalidLocalConfig'] =
+                    'Local config file not an array()! Please provide array() for Local config.';
+            }
+        } else {
+            $this->validateErrorCodes['noLocalConfig'] =
+                'Local config file "' . $this->configName . '.local.php"  not found in "' . $pathLocalConfig . '" ';
+
+            if (file_exists($pathLocalConfigDefaults)) {
+                $localConfigDefaults = require($pathLocalConfigDefaults);
+                if (is_array($localConfigDefaults)) {
+                    if (count($localConfigDefaults)) {
+                        // Local config defaults is ok.
+                        $this->localConfig = $localConfigDefaults;
+                    } else {
+                        $this->validateErrorCodes['unvalidLocalConfigDefaults'] =
+                            'Local config defaults file empty!';
+                    }
+                } else {
+                    $this->validateErrorCodes['unvalidLocalConfig'] =
+                        'Local config defaults file not an array()! Please provide array() for it.';
+                }
+
+                $this->validateErrorCodes['UseDefaultsConfig'] =
+                'For Local config well be used defaults config values from 
+                file "' . $this->configName . '.local.defaults.php"  in "'
+                . $pathLocalConfigDefaults . '" ';
+
+            } else {
+                $this->validateErrorCodes['noLocalConfigDefaults'] =
+                    'Defaults Local config file "' . $this->configName .
+                    '.local.defaults.php"  not found in "' . $pathLocalConfigDefaults
+                    . '" ';
+            }
+        }
+    }
+
+    /**
+     * return meta config array for current config name ($this->configName)
+     *
+     * @return void
+     * @author
+     **/
+    protected function getConfigMeta()
+    {
+        $fileConfigMeta = self::PATH_CONFIG . DS . $this->configName . '.meta.php';
+
+        if (file_exists($fileConfigMeta)) {
+            $configMeta = require($fileConfigMeta);
+
+            if (is_array($configMeta)) {
+                if (count($configMeta)) {
+                    // Meta config is ok.
+                    $this->configMeta = $configMeta;
+                } else {
+                    $this->validateErrorCodes['unvalidMetaConfig'] =
+                        'Meta config file empty!';
+                }
+            } else {
+                $this->validateErrorCodes['unvalidMetaConfig'] =
+                    'Meta config file not an array()! Please provide array() for Meta config.';
+            }
+        } else {
+            $this->validateErrorCodes['noMetaConfig'] =
+                'Meta config file "' . $this->configName . '.php"  not found in "' . $fileConfigMeta . '" ';
+        }
     }
 
     /**
@@ -197,17 +324,17 @@ class ConfigCombiner extends \CustomizableClass
         // $formValidationErrors
         if (count($this->editorValidationErrors)) {
             $formValidationErrors =
-                readyFormValidationErrors (
+                readyFormValidationErrors(
                     $this->editorValidationErrors,
                     $delimiter
                 );
-            foreach ($formValidationErrors as $areaError => $errorData){
+            foreach ($formValidationErrors as $areaError => $errorData) {
                 foreach ($errorData as $subAreaError => $subErrorData) {
-                   $webData['formData']['validationErrors'][] = [
-                       'title' => $areaError.'->'
-                           .str_replace($delimiter, "->", $subAreaError),
-                       'urlHash' => '#option-'.$areaError.'-'.$subAreaError
-                   ];
+                    $webData['formData']['validationErrors'][] = [
+                        'title' => $areaError . '->'
+                            . str_replace($delimiter, "->", $subAreaError),
+                        'urlHash' => '#option-' . $areaError . '-' . $subAreaError,
+                    ];
                 }
             }
         }
@@ -215,14 +342,14 @@ class ConfigCombiner extends \CustomizableClass
         // $formValidatedPost
         if (count($this->validatedPost)) {
             $formValidatedPost =
-                readyFormValidatedPost ($this->validatedPost, $delimiter);
-            foreach ($formValidatedPost as $areaFVP => $dataFVP){
+                readyFormValidatedPost($this->validatedPost, $delimiter);
+            foreach ($formValidatedPost as $areaFVP => $dataFVP) {
                 foreach ($dataFVP as $subAreaFVP => $valueFVP) {
-                   $webData['formData']['validationValid'][] = [
-                       'title' => $areaFVP.'->'
-                           .str_replace($delimiter, "->", $subAreaFVP),
-                       'urlHash' => '#option-'.$areaFVP.'-'.$subAreaFVP
-                   ];
+                    $webData['formData']['validationValid'][] = [
+                        'title' => $areaFVP . '->'
+                            . str_replace($delimiter, "->", $subAreaFVP),
+                        'urlHash' => '#option-' . $areaFVP . '-' . $subAreaFVP,
+                    ];
                 }
             }
         }
@@ -238,28 +365,27 @@ class ConfigCombiner extends \CustomizableClass
 
                 // --- setting up data type for input
                 if (isset($configMetaOneDim[$configArea . $delimiter .
-                    $attrName . $delimiter. 'inputDataType'])) {
+                    $attrName . $delimiter . 'inputDataType'])) {
                     $dataType = $configMetaOneDim[$configArea . $delimiter .
-                    $attrName . $delimiter .'inputDataType'];
+                    $attrName . $delimiter . 'inputDataType'];
                 } else {
                     $dataType = gettype($globalConfigOneDim[$configArea . $delimiter . $attrName]);
                 }
                 $tmpFormData[$configArea][$attrName]['inputDataType'] = $dataType;
                 // -----------------------
 
-
                 if ($tmpFormData[$configArea][$attrName]['fromLocalConfig']) {
                     // setting up list of all local config values for Config form view
                     $webData['formData']['localConfigSettings'][] = [
-                        'title' => $configArea.'->'
-                           .str_replace($delimiter, "->", $attrName),
-                        'urlHash' => '#option-'.$configArea.'-'.$attrName,
+                        'title' => $configArea . '->'
+                            . str_replace($delimiter, "->", $attrName),
+                        'urlHash' => '#option-' . $configArea . '-' . $attrName,
                         'data' => [
                             'type' => $dataType,
-                            'value' => setInputValue($inputData['val'], $dataType)
+                            'value' => setInputValue($inputData['val'], $dataType),
                         ],
                     ];
-                     // ------------------
+                    // ------------------
 
                     // setting up default value for input
                     $defaultValue = '';
@@ -274,127 +400,33 @@ class ConfigCombiner extends \CustomizableClass
                     // --------------------
                 }
 
-
                 // --- Setting up validation check array for Input
                 $tmpFormData[$configArea][$attrName]['validation'] = [
                     'error' =>
                         (isset ($formValidationErrors[$configArea][$attrName]))
-                        ? true : false,
+                            ? true : false,
                     'errorText' =>
                         (isset ($formValidationErrors[$configArea][$attrName]))
-                        ? $formValidationErrors[$configArea][$attrName]['messages']
-                        : '',
+                            ? $formValidationErrors[$configArea][$attrName]['messages']
+                            : '',
                     'post' => [
                         'isValid' =>
                             isset($formValidatedPost[$configArea][$attrName])
-                            ? true : null,
+                                ? true : null,
                         'value' =>
                             (isset($formValidatedPost[$configArea][$attrName]))
-                            ? $formValidatedPost[$configArea][$attrName]['value']
-                            : null
+                                ? $formValidatedPost[$configArea][$attrName]['value']
+                                : null,
                     ],
                 ];
                 // -----------------------
 
             }
         }
-        
+
         $webData['formData']['form'] = $tmpFormData;
 
-
         return $webData;
-    }
-
-    /**
-     * return meta config array for current config name ($this->configName)
-     *
-     * @return void
-     * @author
-     **/
-    protected function getConfigMeta()
-    {
-        $fileConfigMeta = self::PATH_CONFIG . DS . $this->configName . '.meta.php';
-
-        if (file_exists($fileConfigMeta)) {
-            $configMeta = require($fileConfigMeta);
-
-            if (is_array($configMeta)) {
-                if (count($configMeta)) {
-                    // Meta config is ok.
-                    $this->configMeta = $configMeta;
-                } else {
-                    $this->validateErrorCodes['unvalidMetaConfig'] =
-                        'Meta config file empty!';
-                }
-            } else {
-                $this->validateErrorCodes['unvalidMetaConfig'] =
-                    'Meta config file not an array()! Please provide array() for Meta config.';
-            }
-        } else {
-            $this->validateErrorCodes['noMetaConfig'] =
-                'Meta config file "' . $this->configName . '.php"  not found in "' . $fileConfigMeta . '" ';
-        }
-    }
-
-    /**
-     * return global config array for current config name ($this->configName)
-     *
-     * @return void
-     * @author
-     **/
-    protected function getGlobalConfig()
-    {
-        $fileGlobalConfig = self::PATH_CONFIG . DS . $this->configName . '.php';
-
-        if (file_exists($fileGlobalConfig)) {
-            $globalConfig = require($fileGlobalConfig);
-
-            if (is_array($globalConfig)) {
-                if (count($globalConfig)) {
-                    // Global config is ok.
-                    $this->globalConfig = $globalConfig;
-                } else {
-                    $this->validateErrorCodes['unvalidGlobalConfig'] =
-                        'Global config file empty!';
-                }
-            } else {
-                $this->validateErrorCodes['unvalidGlobalConfig'] =
-                    'Global config file not an array()! Please provide array() for Global config.';
-            }
-        } else {
-            $this->validateErrorCodes['noGlobalConfig'] =
-                'Global config file "' . $this->configName . '.php"  not found in "' . $fileGlobalConfig . '" ';
-        }
-    }
-
-    /**
-     * return local config array for current config name ($this->configName)
-     *
-     * @return void
-     * @author
-     **/
-    protected function getLocalConfig()
-    {
-        $pathLocalConfig = self::PATH_CONFIG . DS . $this->configName . '.local.php';
-        if (file_exists($pathLocalConfig)) {
-            $localConfig = require($pathLocalConfig);
-
-            if (is_array($localConfig)) {
-                if (count($localConfig)) {
-                    // Local config is ok.
-                    $this->localConfig = $localConfig;
-                } else {
-                    $this->validateErrorCodes['unvalidLocalConfig'] =
-                        'Local config file empty!';
-                }
-            } else {
-                $this->validateErrorCodes['unvalidLocalConfig'] =
-                    'Local config file not an array()! Please provide array() for Local config.';
-            }
-        } else {
-            $this->validateErrorCodes['noLocalConfig'] =
-                'Local config file "' . $this->configName . 'local.php"  not found in "' . $pathLocalConfig . '" ';
-        }
     }
 
     /**
