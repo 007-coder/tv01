@@ -43,20 +43,8 @@ class ConfigFormRenderer extends \CustomizableClass
             $tmplData['formActionUrl'] = BASE_URL;
         }
 
-        // building html Assets url
-        $parseBaseUrl = parse_url(BASE_URL);
-        $urlPath = '';
-        if (isset($parseBaseUrl['path']) && !empty($parseBaseUrl['path'])) {
-            $explPath = explode('/', $parseBaseUrl['path']);
-            foreach ($explPath as $k => $path) {
-                if (stripos($path, '.php') !== false) {
-                    unset($explPath[$k]);
-                }
-            }
-            $urlPath = implode('/', $explPath);
-        }
-        $tmplData['baseUrl'] = $parseBaseUrl['scheme'] . '://' . $parseBaseUrl['host'];
-        $tmplData['assetsUrl'] = $tmplData['baseUrl'] . $urlPath . '/assets/';
+        $tmplData['baseUrl'] = BASE_URL;
+        $tmplData['assetsUrl'] = BASE_URL . '/assets/';
 
         require_once(self::VIEWS_PATH . DS . $tmplData['page'] . '.php');
     }

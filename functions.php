@@ -207,6 +207,7 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
         : '';
     $badgeDataTypeClasses = [
         'string' => ' badge-info',
+        'array' => ' badge-secondary',
         'boolean' => ' badge-warning',
         'integer' => ' badge-primary',
         'double' => ' badge-danger',
@@ -237,6 +238,12 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
             '<div class="inputError">' . $inputErrorText . '</div>';
     }
 
+    $inputDescriptionCont = '';
+    if (!empty($input['description'])) {
+        $inputDescriptionCont =
+            '<div class="inputDescr"><p>' . $input['description'] . '</p></div>';
+    }
+
     $html .=
         '<div class="row align-items-start no-gutters">';
     // ------ prepare data for Checkbox column
@@ -263,10 +270,11 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
         $isSwitchOn = ' checked';
     }
 
-    // ------ prepare data for Checkbox column
-
     // ------ Checkbox column
-    $html .=
+    if (isset($input['meta']['editable']) && $input['meta']['editable'] === false) {
+        $checkboxHTML =  '<div class="col-md-1 col-sm-1"></div>';
+    } else {
+        $checkboxHTML =
         '<div class="col-md-1 col-sm-1">
             <div class="custom-control custom-switch">
                 <input type="checkbox" ' . $isSwitchOn . ' class="custom-control-input protectiusChbx" 
@@ -275,6 +283,18 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
             </div>
             ' . $htmlMarkFromLocalConfig . '           
         </div>';
+    }
+    /*$html .=
+        '<div class="col-md-1 col-sm-1">
+            <div class="custom-control custom-switch">
+                <input type="checkbox" ' . $isSwitchOn . ' class="custom-control-input protectiusChbx" 
+                id="chbx_' . $attrIdStr . '" data-input-id="' . $attrIdStr . '" data-input-type="' . $input['inputDataType'] . '">
+                <label class="custom-control-label" for="chbx_' . $attrIdStr . '"></label>
+            </div>
+            ' . $htmlMarkFromLocalConfig . '           
+        </div>';*/
+
+    $html .= $checkboxHTML;
     // ------ Checkbox column
 
     // ------ MAIN INPUT column
@@ -288,10 +308,19 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
         || is_null($input['val'])
     ) {
         if (is_null($input['validation']['post']['value'])) {
-            $readonly = (
+            if (isset($input['meta']['editable']) && $input['meta']['editable'] === false){
+                $readonly = ' readonly disabled';
+            } elseif (
+                (isset($input['meta']['editable']) && $input['meta']['editable'] === true)
+                || $input['fromLocalConfig']) {
+                $readonly = '';
+            } else {
+                $readonly = ' readonly disabled';
+            }
+            /*$readonly = (
                 (isset($input['meta']['editable']) && $input['meta']['editable'] === true)
                 || $input['fromLocalConfig']
-            ) ? '' : ' readonly disabled';
+            ) ? '' : ' readonly disabled';*/
         } else {
             $readonly = '';
             $input['val'] = $input['validation']['post']['value'];
@@ -303,6 +332,7 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
             '<div class="form-group">';
         $html .=
             '<p><label for="' . $attrIdStr . '">' . $inputLabelText . '</label></p>';
+        $html .= $inputDescriptionCont;
         $html .= $inputInfoCont;
         $html .= $inputErrorCont;
         $html .=
@@ -337,6 +367,7 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
 
         $html .=
             '<p>' . $inputLabelText . '</p>';
+        $html .= $inputDescriptionCont;
         $html .= $inputInfoCont;
         $html .= $inputErrorCont;
 
@@ -362,6 +393,19 @@ function buildInputHTML($confArea, $attrName, $input = [], $delimiter = '|')
 
     $html .=
         '</div>';
+
+    return $html;
+}
+
+
+
+function buildInputDeleteHTML($confArea, $subArea, $submButtonSize = 'small', $delimiter = '.') {
+
+    $html = '<form action="'.BASE_URL.'" method="post" class="configKey actionForm ml-2 d-lg-inline-block">';
+        $html .= '<button type="submit" class="'.$submButtonSize.' btn btn-outline-danger btn-sm">Delete</button>';
+        $html .= '<input type="hidden" value="'.$confArea.$delimiter.$subArea.'" name="configKey">';
+        $html .= '<input type="hidden" value="delete" name="action">';
+    $html .= '</form>';
 
     return $html;
 }

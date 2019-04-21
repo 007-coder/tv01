@@ -62,3 +62,12 @@ form[name="appConfigForm"] .list-group-item .validationError .inputError > p {
 form[name="appConfigForm"] .list-group-item .validationValid {
     background: #C7F8B3;
 }
+
+form.configKey.actionForm {
+    display: inline-block;
+}
+
+form.configKey.actionForm .btn.btn-sm {
+    padding: 1px 4px;
+    font-size: 0.7rem;
+}

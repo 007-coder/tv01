@@ -374,6 +374,13 @@ class ConfigCombiner extends \CustomizableClass
                 $tmpFormData[$configArea][$attrName]['inputDataType'] = $dataType;
                 // -----------------------
 
+                $tmpFormData[$configArea][$attrName]['description'] =
+                    (isset($configMetaOneDim[$configArea . $delimiter .
+                    $attrName . $delimiter . 'description']))
+                        ? $configMetaOneDim[$configArea . $delimiter .
+                    $attrName . $delimiter . 'description']
+                        : '';
+
                 if ($tmpFormData[$configArea][$attrName]['fromLocalConfig']) {
                     // setting up list of all local config values for Config form view
                     $webData['formData']['localConfigSettings'][] = [
@@ -384,8 +391,10 @@ class ConfigCombiner extends \CustomizableClass
                             'type' => $dataType,
                             'value' => setInputValue($inputData['val'], $dataType),
                         ],
+                        'deleteHTML' => buildInputDeleteHTML($configArea, $attrName)
                     ];
                     // ------------------
+                    $inputData['deleteHTML'] = buildInputDeleteHTML($configArea, $attrName, 'big');
 
                     // setting up default value for input
                     $defaultValue = '';
@@ -421,6 +430,8 @@ class ConfigCombiner extends \CustomizableClass
                 ];
                 // -----------------------
 
+                //wrap_pre($tmpFormData[$configArea][$attrName], '');
+
             }
         }
 
@@ -434,7 +445,6 @@ class ConfigCombiner extends \CustomizableClass
      * possible error types: noGlobalConfig | noLocalConfig | noConfigMeta
      * | unvalidGlobalConfig |  unvalidLocalConfig | unvalidMeta
      * @return array
-     * @author
      **/
     public function getErrors()
     {

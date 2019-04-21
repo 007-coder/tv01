@@ -49,18 +49,27 @@
 
                         <?php foreach ($tmplData['formData']['localConfigSettings'] as $localConfigValue) {
                             ?>
-                            <p class="mb-0">
-                                <a href="<?php echo $localConfigValue['urlHash'] ?>"
-                                   class="badge badge-info localConfig-badge">
-                                    <?php echo $localConfigValue['title'] ?>
-                                </a>,
-                                <span class="badge badge-success ml-2">
-                                    <?php echo $localConfigValue['data']['value'] ?>
-                                </span>,
-                                <span class="badge badge-light ml-2">
-                                    <?php echo $localConfigValue['data']['type'] ?>
-                                </span>
-                            </p>
+                            <div class="mb-0">
+                                <p class="mb-0 d-lg-inline-block">
+                                    <a href="<?php echo $localConfigValue['urlHash'] ?>"
+                                       class="badge badge-info localConfig-badge">
+                                        <?php echo $localConfigValue['title'] ?>
+                                    </a>,
+                                    <span class="badge badge-success ml-2">
+                                        <?php echo $localConfigValue['data']['value'] ?>
+                                    </span>,
+                                    <span class="badge badge-light ml-2">
+                                        <?php echo $localConfigValue['data']['type'] ?>
+                                    </span>
+                                </p>
+                                <?php echo
+                                    (isset($localConfigValue['deleteHTML'])
+                                    && !empty($localConfigValue['deleteHTML']))
+                                    ? $localConfigValue['deleteHTML']
+                                    : '';?>
+                            </div>
+
+
                         <?php } ?>
                     </div>
                 <?php } ?>

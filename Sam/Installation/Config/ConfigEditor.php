@@ -182,9 +182,97 @@ class ConfigEditor extends \CustomizableClass
     {
         if (in_array($action, $this->validTaskActions)) {
             $this->taskAction = $action;
+            return true;
         } else {
             return false;
         }
+    }
+
+    /**
+     * action wrapper
+     * @return bool
+     */
+    public function doAction()
+    {
+        $done = false;
+        if ($this->taskAction !== false) {
+            switch ($this->taskAction) {
+                case "delete":
+                    $done = $this->actRemoveFromLocalConfig();
+                    break;
+            }
+        }
+
+        return $done;
+    }
+
+
+    /**
+     * remove config key and data from Local config file. Or will create it
+     * from local.defaults without removed key-value, if local config file not exists.
+     * @return bool
+     */
+    protected function actRemoveFromLocalConfig()
+    {
+        $done = false;
+        $fileLocalConfig = self::PATH_CONFIG . DS . $this->configName
+            . '.local.php';
+        $fileLocalConfigDefaults = self::PATH_CONFIG . DS . $this->configName
+            . '.local.defaults.php';
+        $oneDimLocalConfig = $publish = $readyForPublish = [];
+        $existFileLocalConfig = $existFileLocalConfigDefaults = false;
+
+        if (file_exists($fileLocalConfig)) {
+            $existFileLocalConfig = true;
+            $localConfig = require $fileLocalConfig;
+            $oneDimLocalConfig = laravelHelpersArrDot($localConfig);
+        } elseif (file_exists($fileLocalConfigDefaults)) {
+            $existFileLocalConfigDefaults = true;
+            $localConfigDefaults = require $fileLocalConfigDefaults;
+            $oneDimLocalConfig = laravelHelpersArrDot($localConfigDefaults);
+        }
+
+        // --------------
+        if ($existFileLocalConfig || $existFileLocalConfigDefaults) {
+            $deleteConfigKey =
+                (
+                isset($this->postData['configKey'])
+                && array_key_exists($this->postData['configKey'], $oneDimLocalConfig)
+                )
+                    ? $this->postData['configKey']
+                    : null;
+            if (count($oneDimLocalConfig)) {
+                foreach ($oneDimLocalConfig as $configKey => $value) {
+                    if (!is_null($deleteConfigKey) && ($configKey != $deleteConfigKey)) {
+                        $readyForPublish[$configKey] = $value;
+                    }
+                }
+
+                if (count($readyForPublish)) {
+                    $delimiter = '.';
+                    // build multidimensional $publish array
+                    foreach ($readyForPublish as $configKey => $value) {
+                        $currPublish = [];
+                        laravelHelpersArrSet(
+                            $currPublish, $configKey, $value, $delimiter
+                        );
+                        $publish = array_merge_recursive($publish, $currPublish);
+                    }
+                }
+                // --- publish to local config file
+                if (
+                    file_put_contents(
+                        self::PATH_CONFIG . DS . $this->configName . '.local.php',
+                        '<?php return ' . var_export($publish, true) . ';'
+                    ) !== false) {
+
+                    $done = true;
+                }
+
+            }
+        }
+
+        return $done;
     }
 
     /**
@@ -194,7 +282,6 @@ class ConfigEditor extends \CustomizableClass
      */
     public function validate()
     {
-
         if (isset($this->postData['configName'])) {
             unset($this->postData['configName']);
             $this->setPostData($this->postData);
@@ -394,11 +481,15 @@ class ConfigEditor extends \CustomizableClass
                     if (empty($value)) {
                         return null;
                     }
+                    break;
                 case 'integer':
-                    return (int)$value;
+                    return empty($value) ? null : (int)$value;
 
                 case 'double':
-                    return (float)$value;
+                    return empty($value) ? null : (float)$value;
+
+                case 'string':
+                    return trim($value);
 
                 case 'boolean':
                     $value = (in_array(
@@ -406,7 +497,6 @@ class ConfigEditor extends \CustomizableClass
                         ['1', 'true', true, 1, 'yes', 'on'],
                         true)
                     ) ? true : false;
-
                     return $value;
             }
         }

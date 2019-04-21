@@ -13,21 +13,24 @@ return [
 
     'account' => [
         'page' => [
-            'editable' => true,
+            'editable' => false,
             'visible' => true,
+            'description' => 'Option some description,,,,text text',
 
             // data type
             'inputDataType' => ConfigValidator::T_BOOL,
+
+            //validation rules
             'validate' => [
-                'required' => true,
                 'validationRules' =>''
                     /*'validate1:const=5,const2=dgdgdg|validate2|validate3'*/,
             ],
         ],
         'thumbnailSize' => [
+            'description' => 'thumbnailSize: Option some description,,,,text text',
             'editable' => true,
             'validate' => [
-                'required' => true,
+                'validationRules' =>''
             ],
         ],
     ],
@@ -86,6 +89,37 @@ return [
             ],
         ],
 
+    ],
+
+    'filesystem' => [
+        'remote' => [
+            'ipAllow' => [
+
+                0 => [
+                    // data type
+                'inputDataType' => ConfigValidator::T_ARRAY,
+                'description' => 'Description for <b>ipAllow</b> option',
+                ],
+
+                'inputDataType' => ConfigValidator::T_ARRAY,
+                'description' => 'Description for <b>ipAllow</b> option',
+
+
+            ],
+            'ipDeny' => [
+                'inputDataType' => ConfigValidator::T_ARRAY,
+                'description' => 'Description for <b>ipDeny</b> option',
+            ],
+            'folderAllow' => [
+                'inputDataType' => ConfigValidator::T_ARRAY,
+                'description' => 'Description for <b>folderAllow</b> option',
+            ],
+            'regexDeny' => [
+                'inputDataType' => ConfigValidator::T_ARRAY,
+                'description' => 'Description for <b>regexDeny</b> option',
+            ],
+
+        ]
     ],
 
 ];

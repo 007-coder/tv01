@@ -1,10 +1,25 @@
 <?php
-define('DS', DIRECTORY_SEPARATOR);
 
-define('BASE_URL',
-    $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST']
-    . $_SERVER['REQUEST_URI']
-);
+if (!defined('DS')) {
+    define('DS', DIRECTORY_SEPARATOR);
+}
+
+$url = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST']
+    . $_SERVER['REQUEST_URI'];
+$parseBaseUrl = parse_url($url);
+$urlPath = '';
+if (isset($parseBaseUrl['path']) && !empty($parseBaseUrl['path'])) {
+    $explPath = explode('/', $parseBaseUrl['path']);
+    foreach ($explPath as $k => $path) {
+        if (stripos($path, '.php') !== false) {
+            unset($explPath[$k]);
+        }
+    }
+    $urlPath = implode('/', $explPath);
+}
+define('BASE_URL', $parseBaseUrl['scheme'] . '://' . $parseBaseUrl['host']);
+
+
 define('BASE_DIR', __DIR__);
 define('DIR_SAM_CONFIG', BASE_DIR . DS . 'Sam' . DS . 'Installation' . DS . 'Config');
 define('DIR_SAM_VALIDATE', BASE_DIR . DS . 'Sam' . DS . 'Core' . DS . 'Validate');
@@ -56,13 +71,18 @@ if (isset($_POST) && count($_POST) && !is_null($workConfigName)) {
 
     if ($configEditor->setConfigName($workConfigName)) {
         $configEditor->setPostData($_POST);
-        if ($configEditor->validate()) {
-            $configUpdated = $configEditor->updateConfig();
+        if (isset($_POST['action']) && !empty($_POST['action'])) {
+            $configEditor->setTaskAction($_POST['action']);
+            $configUpdated = $configEditor->doAction();
         } else {
-            $editorErrors = $configEditor->getErrors();
-            $validatedPost = $configEditor->getValidatedPost();
-            $configCombiner->setEditorValidationErrors($editorErrors);
-            $configCombiner->setValidatedPost($validatedPost);
+            if ($configEditor->validate()) {
+                $configUpdated = $configEditor->updateConfig();
+            } else {
+                $editorErrors = $configEditor->getErrors();
+                $validatedPost = $configEditor->getValidatedPost();
+                $configCombiner->setEditorValidationErrors($editorErrors);
+                $configCombiner->setValidatedPost($validatedPost);
+            }
         }
     }
 }
