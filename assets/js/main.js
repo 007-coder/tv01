@@ -3,9 +3,11 @@ $(document).ready(function(){
     $('.custom-control-input.protectiusChbx').each(function() {
         var inputType = $( this ).attr('data-input-type');
         var inputId = $( this ).attr('data-input-id');
+        var inputContainer = $( this ).attr('data-input-container');
 
             $( this ).click(function(){
 
+                //boolean
                 if (inputType == 'boolean') {
                     var targetTrue = $('input#'+ inputId +'_true');
                     var targetFalse = $('input#'+ inputId +'_false');
@@ -67,7 +69,54 @@ $(document).ready(function(){
 
                     }
 
-                } else {
+                }
+
+                // array
+                if (inputType == 'array') {
+                    var target = (inputContainer == 'textarea')
+                        ? $('textarea#'+ inputId)
+                        : $('input#'+ inputId);
+                    var targetDataType = $('input#'+ inputId +'_hiddenDataType');
+
+                    if (target.hasClass('disabled'))
+                    {
+                        target.prop("disabled", false);
+                        target.prop("readonly", false);
+                        targetDataType.prop("disabled", false);
+                        targetDataType.prop("readonly", false);
+
+                        target.removeAttr('readonly');
+                        target.removeAttr('disabled');
+                        targetDataType.removeAttr('readonly');
+                        targetDataType.removeAttr('disabled');
+
+                        target.removeClass('disabled');
+                        target.removeClass('readonly');
+                        targetDataType.removeClass('disabled');
+                        targetDataType.removeClass('readonly');
+
+                    }
+                    else {
+                        target.prop("disabled", true);
+                        target.prop("readonly", true);
+                        targetDataType.prop("disabled", true);
+                        targetDataType.prop("readonly", true);
+
+                        target.attr('readonly','readonly');
+                        target.attr('readonly','readonly');
+                        targetDataType.attr('readonly','readonly');
+                        targetDataType.attr('readonly','readonly');
+
+                        target.addClass('disabled');
+                        target.addClass('readonly');
+                        targetDataType.addClass('disabled');
+                        targetDataType.addClass('readonly');
+                    }
+
+                }
+
+                // text
+                else {
                     var target = $('input#'+ inputId);
                     var targetDataType = $('input#'+ inputId +'_hiddenDataType');
 
@@ -88,7 +137,8 @@ $(document).ready(function(){
                         targetDataType.removeClass('disabled');
                         targetDataType.removeClass('readonly');
 
-                    } else {
+                    }
+                    else {
                         target.prop("disabled", true);
                         target.prop("readonly", true);
                         targetDataType.prop("disabled", true);

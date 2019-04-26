@@ -50,6 +50,12 @@ form[name="appConfigForm"] .list-group-item .localConfig {
     background: #C5E9EF;
 }
 
+.localValuesWrap .badge,
+form[name="appConfigForm"] .list-group-item .localConfig .badge
+{
+    white-space: normal;
+}
+
 form[name="appConfigForm"] .list-group-item .validationError {
     background: #f8d7da;
 }
@@ -71,3 +77,4 @@ form.configKey.actionForm .btn.btn-sm {
     padding: 1px 4px;
     font-size: 0.7rem;
 }
+

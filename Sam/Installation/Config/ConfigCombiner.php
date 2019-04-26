@@ -149,7 +149,6 @@ class ConfigCombiner extends \CustomizableClass
 
         if (empty($this->validateErrorCodes)) {
             $this->getLocalConfig();
-            $this->getConfigMeta();
             return true;
         } else {
             return false;
@@ -165,6 +164,8 @@ class ConfigCombiner extends \CustomizableClass
     protected function getGlobalConfig()
     {
         if (!empty($this->configName)) {
+            $this->getConfigMeta();
+
             $fileGlobalConfig = self::PATH_CONFIG . DS . $this->configName . '.php';
 
             if (file_exists($fileGlobalConfig)) {
@@ -220,7 +221,9 @@ class ConfigCombiner extends \CustomizableClass
                 $this->validateErrorCodes['unvalidLocalConfig'] =
                     'Local config file not an array()! Please provide array() for Local config.';
             }
-        } else {
+        }
+        // if no local config found ------------
+        else {
             $this->validateErrorCodes['noLocalConfig'] =
                 'Local config file "' . $this->configName . '.local.php"  not found in "' . $pathLocalConfig . '" ';
 
@@ -311,11 +314,17 @@ class ConfigCombiner extends \CustomizableClass
         $webData['formData'] = readyFormData($webData['formData'],
             $this->configMeta, $delimiter);
 
-        $localConfigOneDim =
-            count($this->localConfig)
-                ? MultiDimToOneDimArray($delimiter, $this->localConfig)
-                : [];
-        $globalConfigOneDim = MultiDimToOneDimArray($delimiter, $this->globalConfig);
+        $localConfigOneDim = [];
+        if (count($this->localConfig)) {
+            $localConfigOneDim = MultiDimToOneDimArray(
+                $delimiter,
+                buildConfigUsingMeta($this->localConfig, $this->configMeta, true)
+            );
+        }
+        $globalConfigOneDim = MultiDimToOneDimArray(
+            $delimiter,
+            buildConfigUsingMeta($this->globalConfig, $this->configMeta, true)
+        );
         $configMetaOneDim = MultiDimToOneDimArray($delimiter, $this->configMeta);
 
         $formValidationErrors =

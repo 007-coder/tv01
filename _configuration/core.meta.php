@@ -81,6 +81,22 @@ return [
 
         ],
 
+        'report' =>[
+            'customLots' => [
+                'fields' => [
+                    // data type
+                    'inputDataType' => ConfigValidator::T_ARRAY,
+                    'inputType' => 'textarea',
+                    'description' => 'Option some description,,,,text text',
+                    //validation rules
+                    'validate' => [
+                        'validationRules' =>''
+                            /*'validate1:const=5,const2=dgdgdg|validate2|validate3'*/,
+                    ],
+                ]
+            ]
+        ],
+
         'user' => [
             'reseller' => [
                 'auctionBidderCertUploadDir' => [
@@ -94,32 +110,80 @@ return [
     'filesystem' => [
         'remote' => [
             'ipAllow' => [
-
-                0 => [
-                    // data type
                 'inputDataType' => ConfigValidator::T_ARRAY,
                 'description' => 'Description for <b>ipAllow</b> option',
-                ],
-
-                'inputDataType' => ConfigValidator::T_ARRAY,
-                'description' => 'Description for <b>ipAllow</b> option',
-
-
+                'valuesDelimiter' => ','
             ],
             'ipDeny' => [
                 'inputDataType' => ConfigValidator::T_ARRAY,
                 'description' => 'Description for <b>ipDeny</b> option',
+                'valuesDelimiter' => ','
             ],
             'folderAllow' => [
                 'inputDataType' => ConfigValidator::T_ARRAY,
+                'inputType' => 'textarea',
                 'description' => 'Description for <b>folderAllow</b> option',
+                'valuesDelimiter' => ','
             ],
             'regexDeny' => [
                 'inputDataType' => ConfigValidator::T_ARRAY,
+                'inputType' => 'textarea',
                 'description' => 'Description for <b>regexDeny</b> option',
+                'valuesDelimiter' => ','
             ],
 
         ]
     ],
+
+    'lot' => [
+        'customField' => [
+            'postalCode' => [
+                'searchRadius' => [
+                    // data type
+                    'inputDataType' => ConfigValidator::T_ARRAY,
+                    'description' => 'Option some description,,,,text text',
+                    //validation rules
+                    'validate' => [
+                        'validationRules' =>''
+                    ],
+                ]
+            ]
+        ],
+
+        'orderIgnoreWords' => [
+            // data type
+            'inputDataType' => ConfigValidator::T_ARRAY,
+            'inputType' => 'textarea',
+            'description' => 'Option some description,,,,text text',
+            //validation rules
+            'validate' => [
+                'validationRules' =>''
+            ],
+        ]
+    ],
+
+    'rtb' => [
+        'client' => [
+            'ipAllow' => [
+                // data type
+                'inputDataType' => ConfigValidator::T_ARRAY,
+                'description' => 'Option some description,,,,text text',
+                //validation rules
+                'validate' => [
+                    'validationRules' =>''
+                ],
+            ],
+            'ipDeny' => [
+                // data type
+                'inputDataType' => ConfigValidator::T_ARRAY,
+                'description' => 'Option some description,,,,text text',
+                //validation rules
+                'validate' => [
+                    'validationRules' =>''
+                ],
+            ]
+        ]
+    ],
+
 
 ];

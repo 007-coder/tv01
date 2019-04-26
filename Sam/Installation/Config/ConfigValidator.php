@@ -88,6 +88,11 @@ class ConfigValidator
         return NumberValidator::isInt($value);
     }
 
+    public function isArray($value)
+    {
+        return (is_array($value)) ? true : false;
+    }
+
     /**
      * @param $value
      * @return bool
@@ -178,19 +183,5 @@ class ConfigValidator
         }
     }
 
-
-
-
-    // test methods
-    public function validate1($options = []) {
-        $isValid = false;
-
-        if (!$isValid) {
-            $this->errorMessages['custom'][__FUNCTION__] = 'Validate1 error';
-        }
-
-        return $isValid;
-    }
-    // ---------------------
 
 }

@@ -49,7 +49,7 @@
 
                         <?php foreach ($tmplData['formData']['localConfigSettings'] as $localConfigValue) {
                             ?>
-                            <div class="mb-0">
+                            <div class="mb-0 valueWrap">
                                 <p class="mb-0 d-lg-inline-block">
                                     <a href="<?php echo $localConfigValue['urlHash'] ?>"
                                        class="badge badge-info localConfig-badge">

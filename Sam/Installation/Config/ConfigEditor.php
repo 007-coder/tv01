@@ -38,6 +38,12 @@ class ConfigEditor extends \CustomizableClass
      */
     protected $configMetaFull = [];
 
+
+    /**
+     * @var array
+     */
+    protected $configMeta = [];
+
     /**
      * Contains array with list of valid config names
      * @var array
@@ -121,6 +127,7 @@ class ConfigEditor extends \CustomizableClass
                 if (file_exists($fileConfigMeta)) {
                     $configMeta = require $fileConfigMeta;
                     $this->configMetaFull = buildConfigMetaFull($this->globalConfig, $configMeta, true);
+                    $this->configMeta = $configMeta;
                 }
 
                 return true;
@@ -358,6 +365,19 @@ class ConfigEditor extends \CustomizableClass
                     }
                     break;
 
+                case ConfigValidator::T_ARRAY:
+                    $tmpDelimiter =
+                        (
+                            isset($oneDimMeta[$configKey]['valuesDelimiter']) &&
+                            !empty($oneDimMeta[$configKey]['valuesDelimiter'])
+                        )
+                        ? $oneDimMeta[$configKey]['valuesDelimiter']
+                        : ',';
+                    if (!$validator->isArray(explode($tmpDelimiter,$value))) {
+                        $isCurrValidDataType = false;
+                    }
+                    break;
+
                 case ConfigValidator::T_NULL:
                     if (!$validator->isNULL($value)) {
                         $isCurrValidDataType = false;
@@ -449,7 +469,14 @@ class ConfigEditor extends \CustomizableClass
             // ------- setting up $this->readyForPublishPost values -------
             foreach ($validatedKeys as $configArea => $value) {
                 $valueDataType = $oneDimMeta[$configArea]['dataType'];
-                $value = $this->leadToTypeAndFilter($value, $valueDataType);
+                $tmpDelimiter =
+                    (
+                        isset($oneDimMeta[$configArea]['valuesDelimiter']) &&
+                        !empty($oneDimMeta[$configArea]['valuesDelimiter'])
+                    )
+                    ? $oneDimMeta[$configArea]['valuesDelimiter']
+                    : ',';
+                $value = $this->leadToTypeAndFilter($value, $valueDataType, $tmpDelimiter);
 
                 $this->readyForPublishPost[$configArea] = $value;
             }
@@ -460,15 +487,17 @@ class ConfigEditor extends \CustomizableClass
         //wrap_pre($validatedKeys, '$validatedKeys in ' . __METHOD__ . ' L: ' . __LINE__);
         //wrap_pre($this->validationErrors, '$this->validationErrors');
 
+
         return $isValid;
     }
 
     /**
      * @param $value
      * @param $type
-     * @return bool|float|int|null
+     * @param string $delimiter
+     * @return bool|float|int|array|null
      */
-    protected function leadToTypeAndFilter($value, $type)
+    protected function leadToTypeAndFilter($value, $type, $delimiter = ',')
     {
         $validTypes = [
             'boolean', 'integer', 'double',
@@ -489,7 +518,16 @@ class ConfigEditor extends \CustomizableClass
                     return empty($value) ? null : (float)$value;
 
                 case 'string':
-                    return trim($value);
+                    return empty($value) ? '' : trim($value);
+
+                case 'array':
+                    if (is_string($value)) {
+                        if (empty($value)) {
+                            return [];
+                        } else {
+                            return explode($delimiter, trim($value));
+                        }
+                    }
 
                 case 'boolean':
                     $value = (in_array(
@@ -514,32 +552,49 @@ class ConfigEditor extends \CustomizableClass
         $delimiter = '.';
 
         if (count($this->readyForPublishPost)) {
-            $oneDimGlobalConfig = laravelHelpersArrDot($this->globalConfig);
+            $oneDimGlobalConfig = buildConfigUsingMeta($this->globalConfig, $this->configMeta, true);
+            $oneDimGlobalConfig = MultiDimToOneDimArray($delimiter, $oneDimGlobalConfig);
 
             $readyForPublish = $excludeFromPublish = [];
             foreach ($this->readyForPublishPost as $configKey => $value) {
                 // if POST and Global config values are different
-                if (
-                    isset($oneDimGlobalConfig[$configKey])
-                    && gettype($oneDimGlobalConfig[$configKey]) == gettype($value)
-                    && $oneDimGlobalConfig[$configKey] != $value
-                ) {
-                    // putting them to $readyForPublish array
-                    $readyForPublish[$configKey] = $value;
-                } // if POST and Global config values are same
-                elseif (
-                    isset($oneDimGlobalConfig[$configKey])
-                    && gettype($oneDimGlobalConfig[$configKey]) == gettype($value)
-                    && $oneDimGlobalConfig[$configKey] == $value
-                ) {
-                    // putting them to $excludeFromPublish array
-                    $excludeFromPublish[$configKey] = $value;
+                if (array_key_exists($configKey, $oneDimGlobalConfig)) {
+
+                    // if $value is an array
+                    if (is_array($value)) {
+                        foreach ( $value as $vk => $vItem) {
+                            if (
+                                in_array($vItem, $oneDimGlobalConfig[$configKey])
+                                && count($oneDimGlobalConfig[$configKey]) == count($value)
+                            ) {
+                                // putting them to $excludeFromPublish array
+                                $excludeFromPublish[$configKey] = $value;
+                            } else {
+                                // putting them to $readyForPublish array
+                                $readyForPublish[$configKey] = $value;
+                            }
+                        }
+                    }
+
+                    // if $value not array
+                    else {
+                        if (gettype($oneDimGlobalConfig[$configKey]) == gettype($value)) {
+                            if ($oneDimGlobalConfig[$configKey] != $value) {
+                                // putting them to $readyForPublish array
+                                $readyForPublish[$configKey] = $value;
+                            } else {
+                                // putting them to $excludeFromPublish array
+                                $excludeFromPublish[$configKey] = $value;
+                            }
+                        }
+                    }
+
                 }
+
             }
 
             $publish = [];
             if (count($readyForPublish)) {
-
                 // build multidimensional $publish array
                 foreach ($readyForPublish as $configKey => $value) {
                     $currPublish = [];
@@ -563,9 +618,7 @@ class ConfigEditor extends \CustomizableClass
             } else {
                 $updated = true;
             }
-            /*wrap_pre(laravelHelpersArrDot($publish), 'laravelHelpersArrDot($publish) in ' . __FUNCTION__);
-            wrap_pre($excludeFromPublish, '$excludeFromPublish in ' . __FUNCTION__);
-            wrap_pre($this->readyForPublishPost, '$this->readyForPublishPost in ' . __FUNCTION__);*/
+
         }
 
         return $updated;
